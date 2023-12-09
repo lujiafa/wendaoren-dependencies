@@ -1,0 +1,25 @@
+package com.wendaoren.websecurity.session;
+
+import com.wendaoren.websecurity.annotation.CheckSession;
+import com.wendaoren.websecurity.exception.SessionException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.Method;
+
+/**
+ * 会话验证器
+ */
+@FunctionalInterface
+public interface SessionValidator {
+
+	/**
+	 * 验证session是否合法
+	 * @param request
+	 * @param method 请求映射方法/待验证会话方法
+	 * @param checkSession 注解
+	 * @throws SessionException
+	 */
+	void verify(HttpServletRequest request, Method method, CheckSession checkSession) throws SessionException;
+	
+}

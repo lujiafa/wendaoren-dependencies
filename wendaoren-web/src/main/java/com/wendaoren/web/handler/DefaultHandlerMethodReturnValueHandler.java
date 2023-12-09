@@ -1,0 +1,54 @@
+package com.wendaoren.web.handler;
+
+import com.wendaoren.web.model.response.EmbedResponseData;
+import com.wendaoren.web.model.response.ResponseData;
+import com.wendaoren.web.util.WebUtils;
+import com.wendaoren.web.view.SmartView;
+import org.springframework.core.MethodParameter;
+import org.springframework.core.Ordered;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
+import org.springframework.web.method.support.ModelAndViewContainer;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * @date 2018年6月4日
+ * @Description 响应处理器
+ */
+public class DefaultHandlerMethodReturnValueHandler implements HandlerMethodReturnValueHandler, Ordered {
+
+
+	@Override
+	public boolean supportsReturnType(MethodParameter returnType) {
+		if (ResponseData.class.isAssignableFrom(returnType.getParameterType())
+				|| EmbedResponseData.class.isAssignableFrom(returnType.getParameterType())) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void handleReturnValue(Object returnValue, MethodParameter returnType, ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest) throws Exception {
+		Assert.notNull(returnValue, "parameter returnValue cannot be null.");
+		HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
+		MediaType mediaType = WebUtils.getResponseMediaType(request);
+		SmartView view = null;
+		if (ResponseData.class.isAssignableFrom(returnType.getParameterType())) {
+			view = new SmartView((ResponseData<?>) returnValue, mediaType);
+		} else {
+			view = new SmartView((EmbedResponseData) returnValue, mediaType);
+		}
+		mavContainer.setView(view);
+		// 设置请求是否已经处理，不再需要后续的处理
+		mavContainer.setRequestHandled(false);
+	}
+
+	@Override
+	public int getOrder() {
+		return HIGHEST_PRECEDENCE;
+	}
+}
