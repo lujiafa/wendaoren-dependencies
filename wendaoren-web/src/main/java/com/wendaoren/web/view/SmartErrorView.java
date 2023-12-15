@@ -13,7 +13,7 @@ public class SmartErrorView extends SmartView {
 	private ErrorCode errorCode;
 	
 	public SmartErrorView(ErrorCode errorCode, MediaType mediaType) {
-		super(ResponseData.fail(errorCode), mediaType);
+		super(ResponseData.fail(errorCode), mediaType, true);
 		this.errorCode = errorCode;
 	}
 	

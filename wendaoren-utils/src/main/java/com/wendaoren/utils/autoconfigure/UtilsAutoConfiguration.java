@@ -1,5 +1,6 @@
 package com.wendaoren.utils.autoconfigure;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wendaoren.utils.common.JsonUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -15,7 +16,7 @@ public class UtilsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @Scope(value = "singleton")
-    public JsonUtils jsonUtils(ObjectProvider<Jackson2ObjectMapperBuilder> objectMapperBuilderObjectProvider) {
-        return new JsonUtils(objectMapperBuilderObjectProvider.getIfAvailable());
+    public JsonUtils jsonUtils(ObjectMapper jacksonObjectMapper) {
+        return new JsonUtils(jacksonObjectMapper);
     }
 }

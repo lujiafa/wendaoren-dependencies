@@ -1,6 +1,6 @@
 package com.wendaoren.web.util;
 
-import com.wendaoren.core.constant.SeparatorChar;
+import com.wendaoren.utils.constant.SeparatorChar;
 import com.wendaoren.core.exception.BusinessException;
 import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.core.exception.table.CommonErrorCodeTable;

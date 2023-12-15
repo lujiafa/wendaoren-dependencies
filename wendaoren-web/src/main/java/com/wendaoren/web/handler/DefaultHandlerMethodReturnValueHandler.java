@@ -2,6 +2,7 @@ package com.wendaoren.web.handler;
 
 import com.wendaoren.web.model.response.EmbedResponseData;
 import com.wendaoren.web.model.response.ResponseData;
+import com.wendaoren.web.prop.WebProperties;
 import com.wendaoren.web.util.WebUtils;
 import com.wendaoren.web.view.SmartView;
 import org.springframework.core.MethodParameter;
@@ -13,6 +14,7 @@ import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
 
 /**
  * @date 2018年6月4日
@@ -20,6 +22,11 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class DefaultHandlerMethodReturnValueHandler implements HandlerMethodReturnValueHandler, Ordered {
 
+	private WebProperties webProperties;
+
+	public DefaultHandlerMethodReturnValueHandler(@NotNull WebProperties webProperties) {
+		this.webProperties = webProperties;
+	}
 
 	@Override
 	public boolean supportsReturnType(MethodParameter returnType) {
@@ -38,9 +45,9 @@ public class DefaultHandlerMethodReturnValueHandler implements HandlerMethodRetu
 		MediaType mediaType = WebUtils.getResponseMediaType(request);
 		SmartView view = null;
 		if (ResponseData.class.isAssignableFrom(returnType.getParameterType())) {
-			view = new SmartView((ResponseData<?>) returnValue, mediaType);
+			view = new SmartView((ResponseData<?>) returnValue, mediaType, webProperties.getResponse().isSerializationIgnoreNull());
 		} else {
-			view = new SmartView((EmbedResponseData) returnValue, mediaType);
+			view = new SmartView((EmbedResponseData) returnValue, mediaType, webProperties.getResponse().isSerializationIgnoreNull());
 		}
 		mavContainer.setView(view);
 		// 设置请求是否已经处理，不再需要后续的处理

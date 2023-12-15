@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +41,9 @@ public class SessionContext {
 	
 	/**
 	 * @Title getSessionId
-	 * @Description 获取请求头sessionId，默认从请求头中获取，若配置"web.security.session.enableHeader=false"则通过cookie中获取
+	 * @Description
+	 * 		获取请求头sessionId，默认从请求头中获取，若配置"web.security.session.enableHeader=false"则通过cookie中获取;
+	 * 		sessionId在请求头中字段名默认为“sid”，可通过配置"web.security.session.sessionIdName=sid"自定义设置；
 	 */
 	public static String getSessionId() {
 		String sessionIdName = securityProperties.getSession().getSessionIdName();
@@ -167,16 +170,11 @@ public class SessionContext {
 			return null;
 		}
 		Map<String, String> mutexConditionMap = (Map<String, String>) session.getAttribute(SecurityConstant.SECURITY_SESSION_MUTEX_KEYS_ATTR_NAME);
-		if (mutexConditionMap != null && mutexConditionMap.size() > 0) {
-			List<String> cacheKeyList = mutexConditionMap.entrySet().stream().map(e -> cachePrefix + String.format(":mutex:%s:%s", e.getKey(), e.getValue())).collect(Collectors.toList());
-			List<String> verifySessionIdList = redisTemplate.opsForValue().multiGet(cacheKeyList);
-			boolean verifyFlag = verifySessionIdList.stream().allMatch(e -> sessionId.equals(e));
-			// 验证失败
-			if (!verifyFlag) {
-				return null;
-			}
+		if (mutexConditionMap == null || mutexConditionMap.size() == 0) {
+			return session;
 		}
-		return session;
+		List<String> cacheKeyList = mutexConditionMap.entrySet().stream().map(e -> cachePrefix + String.format(":mutex:%s:%s", e.getKey(), e.getValue())).collect(Collectors.toList());
+		return cacheKeyList.parallelStream().allMatch(k -> sessionId.equals(redisTemplate.opsForValue().get(k))) ? session : null;
 	}
 	
 	/**
@@ -184,23 +182,17 @@ public class SessionContext {
 	 * @return true-延期成功 false-延期失败
 	 */
 	public static boolean delay() {
-		Session session = get();
-		if (session == null) {
-			logger.error("delay fail, session has expired.");
-			return false;
-		}
+		Session session = null;
 		String sessionCacheKey = securityProperties.getSession().getCachePrefix() + session.getId();
-		if (redisTemplate.opsForValue().getAndExpire(sessionCacheKey, securityProperties.getSession().getExpire(), TimeUnit.SECONDS) == null) {
+		if ((session = (Session) redisTemplate.opsForValue().getAndExpire(sessionCacheKey, securityProperties.getSession().getExpire(), TimeUnit.SECONDS)) == null) {
 			return false;
 		}
 		Map<String, String> mutexConditionMap = (Map<String, String>) session.getAttribute(SecurityConstant.SECURITY_SESSION_MUTEX_KEYS_ATTR_NAME);
-		if (mutexConditionMap != null && mutexConditionMap.size() > 0) {
-			List<String> cacheKeyList = mutexConditionMap.entrySet().stream().map(e -> securityProperties.getSession().getCachePrefix() + String.format(":mutex:%s:%s", e.getKey(), e.getValue())).collect(Collectors.toList());
-			if (!cacheKeyList.parallelStream().allMatch(k -> redisTemplate.opsForValue().getAndExpire(k, securityProperties.getSession().getExpire(), TimeUnit.SECONDS) != null)) {
-				return false;
-			}
+		if (mutexConditionMap == null || mutexConditionMap.size() == 0) {
+			return true;
 		}
-		return true;
+		List<String> cacheKeyList = mutexConditionMap.entrySet().stream().map(e -> securityProperties.getSession().getCachePrefix() + String.format(":mutex:%s:%s", e.getKey(), e.getValue())).collect(Collectors.toList());
+		return cacheKeyList.parallelStream().allMatch(k -> redisTemplate.opsForValue().getAndExpire(k, securityProperties.getSession().getExpire(), TimeUnit.SECONDS) != null);
 	}
 
 	/**
@@ -209,7 +201,7 @@ public class SessionContext {
 	 */
 	public static boolean remove() {
 		remove(getSessionId());
-		sessionContextHolder.remove();
+		releaseSession();
 		if (!securityProperties.isEnableHeader()) {
 			WebUtils.removeCookie(WebUtils.getRequest(), WebUtils.getResponse(), securityProperties.getSession().getSessionIdName());
 		}
@@ -222,6 +214,9 @@ public class SessionContext {
 	 * @param sessionId 会话ID
 	 */
 	public static void remove(String sessionId) {
+		if (!StringUtils.hasLength(sessionId)) {
+			return;
+		}
 		String sessionCacheKey = securityProperties.getSession().getCachePrefix() + sessionId;
 		Session session = (Session) redisTemplate.opsForValue().getAndDelete(sessionCacheKey);
 		if (session == null) {
@@ -232,7 +227,9 @@ public class SessionContext {
 			return;
 		}
 		List<String> cacheKeyList = mutexConditionMap.entrySet().stream().map(e -> securityProperties.getSession().getCachePrefix() + String.format(":mutex:%s:%s", e.getKey(), e.getValue())).collect(Collectors.toList());
-		redisTemplate.execute(RedisScriptConstant.SESSION_DEL_MUTEX_DATA_BY_SESSIONID, cacheKeyList, sessionId);
+		cacheKeyList.parallelStream().forEach(k -> {
+			redisTemplate.execute(RedisScriptConstant.SESSION_DEL_MUTEX_DATA_SCRIPT, Collections.singletonList(k), sessionId);
+		});
 	}
 	
 	/**

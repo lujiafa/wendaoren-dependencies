@@ -28,12 +28,18 @@ public class SmartView implements View {
 	protected Object data;
 	protected MediaType mediaType = MediaType.APPLICATION_JSON;
 	protected Charset charset = StandardCharsets.UTF_8;
+	protected boolean serializationIgnoreNull;
 
 	public SmartView(Object data, MediaType mediaType) {
+		this(data, mediaType, false);
+	}
+
+	public SmartView(Object data, MediaType mediaType, boolean serializationIgnoreNull) {
 		this.data = data;
 		if (mediaType != null) {
 			this.mediaType = mediaType;
 		}
+		this.serializationIgnoreNull = serializationIgnoreNull;
 	}
 	
 	@Override
@@ -76,26 +82,18 @@ public class SmartView implements View {
 			content = "null";
 			return content;
 		}
-		Object responseObj = data;
-		if (data instanceof ResponseData && ((ResponseData<?>) data).getData() == null) {
-			Map<String, Object> tempMap = IntrospectorUtils.toMap(data);
-			tempMap.remove(ResponseData.DATA_FILTER_FIELD);
-			responseObj = tempMap;
-		} else if (data instanceof EmbedResponseData && ((EmbedResponseData) data).get(ResponseData.DATA_FILTER_FIELD) == null) {
-			((EmbedResponseData) data).remove(ResponseData.DATA_FILTER_FIELD);
-		}
 		if (MediaType.APPLICATION_JSON.includes(mediaType)
 				|| MediaType.TEXT_PLAIN.includes(mediaType)
 				|| EXTENSION_SUPPORT_JSON_MEDIA_TYPE.includes(mediaType)) {
-			content = getJsonContent(responseObj);
+			content = getJsonContent(data);
 		} else if (MediaType.APPLICATION_XML.includes(mediaType)
 				|| MediaType.TEXT_HTML.includes(mediaType)
 				|| MediaType.TEXT_XML.includes(mediaType)
 				|| EXTENSION_SUPPORT_XML_MEDIA_TYPE.includes(mediaType)) {
-			content = XmlUtils.toXml(responseObj, charset);
+			content = XmlUtils.toXml(data, charset);
 		} else {
 			//logger.warn("view not to support current media type[{}], use the default {}", mediaType.toString(), MediaType.APPLICATION_JSON_UTF8.toString());
-			content = getJsonContent(responseObj);
+			content = getJsonContent(data);
 		}
 		return content;
 	}
@@ -107,7 +105,7 @@ public class SmartView implements View {
 	 * @return String
 	 */
 	private String getJsonContent(Object obj) {
-		return JsonUtils.toString(obj);
+		return serializationIgnoreNull ? JsonUtils.toStringIgnoreNull(obj) : JsonUtils.toString(obj);
 	}
 
 }

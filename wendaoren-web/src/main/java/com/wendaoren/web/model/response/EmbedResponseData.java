@@ -21,8 +21,8 @@ public class EmbedResponseData extends LinkedHashMap<String, Object> {
 
 	private static final long serialVersionUID = 1L;
 
-	private final static String CODE_NAME = "code";
-	private final static String MESSAGE_NAME = "message";
+	public final static String CODE_NAME = "code";
+	public final static String MESSAGE_NAME = "message";
 
 	/**
 	 * @Title hasSuccess

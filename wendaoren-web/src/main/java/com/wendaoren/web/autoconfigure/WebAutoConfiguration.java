@@ -49,7 +49,7 @@ public class WebAutoConfiguration {
         FilterRegistrationBean<RepeatStreamHandlerRequestFilter> registration = new FilterRegistrationBean<RepeatStreamHandlerRequestFilter>();
         registration.setFilter(new RepeatStreamHandlerRequestFilter());
         registration.setEnabled(webProperties.getRequest().isRepeatStream());
-        registration.addUrlPatterns((String[]) webProperties.getRequest().getUrlPatterns().toArray());
+        registration.addUrlPatterns((String[]) webProperties.getRequest().getRepeatStreamUrlPatterns().toArray());
         registration.setName(Introspector.decapitalize(RepeatStreamHandlerRequestFilter.class.getSimpleName()));
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registration;
@@ -65,7 +65,7 @@ public class WebAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public DefaultHandlerMethodReturnValueHandler defaultHandlerMethodReturnValueHandler() {
-        return new DefaultHandlerMethodReturnValueHandler();
+        return new DefaultHandlerMethodReturnValueHandler(webProperties);
     }
 
     @Bean
@@ -81,6 +81,6 @@ public class WebAutoConfiguration {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ConditionalOnMissingBean
     public ResponseDataResponseBodyTransferAdvice responseDataResponseBodyTransferAdvice() {
-        return new ResponseDataResponseBodyTransferAdvice();
+        return new ResponseDataResponseBodyTransferAdvice(webProperties);
     }
 }

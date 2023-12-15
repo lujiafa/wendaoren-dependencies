@@ -15,28 +15,8 @@ public class WebProperties {
 
 	/** 请求相关配置 **/
 	private RequestProperties request = new RequestProperties();
-
-	public static class RequestProperties {
-		/** 是否开启可重复读取流 **/
-		private boolean repeatStream = false;
-		private List<String> urlPatterns = Arrays.asList("/*");
-
-		public boolean isRepeatStream() {
-			return repeatStream;
-		}
-
-		public void setRepeatStream(boolean repeatStream) {
-			this.repeatStream = repeatStream;
-		}
-
-		public List<String> getUrlPatterns() {
-			return urlPatterns;
-		}
-
-		public void setUrlPatterns(List<String> urlPatterns) {
-			this.urlPatterns = urlPatterns;
-		}
-	}
+	/** 响应相关配置 **/
+	private ResponseProperties response = new ResponseProperties();
 
 	public boolean isDisableDefaultExceptionResolver() {
 		return disableDefaultExceptionResolver;
@@ -52,5 +32,52 @@ public class WebProperties {
 
 	public void setRequest(RequestProperties request) {
 		this.request = request;
+	}
+
+	public ResponseProperties getResponse() {
+		return response;
+	}
+
+	public void setResponse(ResponseProperties response) {
+		this.response = response;
+	}
+
+	public static class RequestProperties {
+		/** 是否开启可重复读取流 **/
+		private boolean repeatStream = false;
+		private List<String> repeatStreamUrlPatterns = Arrays.asList("/*");
+
+		public boolean isRepeatStream() {
+			return repeatStream;
+		}
+
+		public void setRepeatStream(boolean repeatStream) {
+			this.repeatStream = repeatStream;
+		}
+
+		public List<String> getRepeatStreamUrlPatterns() {
+			return repeatStreamUrlPatterns;
+		}
+
+		public void setRepeatStreamUrlPatterns(List<String> repeatStreamUrlPatterns) {
+			this.repeatStreamUrlPatterns = repeatStreamUrlPatterns;
+		}
+	}
+
+	public static class ResponseProperties {
+		/**
+		 * 响应输出（序列化）时是否忽略空值。<br>
+		 * 注：服务间通讯不建议开启。如果通讯过程中采用忽略空值序列化，解析/反序列化时可能导致反序列化对象默认值不被null覆盖，从而数据失真<br>
+		 * 哪些场景可能适用打开：前后端通讯、请求外部系统、...
+		 */
+		private boolean serializationIgnoreNull;
+
+		public boolean isSerializationIgnoreNull() {
+			return serializationIgnoreNull;
+		}
+
+		public void setSerializationIgnoreNull(boolean serializationIgnoreNull) {
+			this.serializationIgnoreNull = serializationIgnoreNull;
+		}
 	}
 }

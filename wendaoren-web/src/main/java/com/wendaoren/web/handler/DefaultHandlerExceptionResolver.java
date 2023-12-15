@@ -1,6 +1,6 @@
 package com.wendaoren.web.handler;
 
-import com.wendaoren.core.constant.SeparatorChar;
+import com.wendaoren.utils.constant.SeparatorChar;
 import com.wendaoren.core.exception.BusinessException;
 import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.core.exception.table.CommonErrorCodeTable;
@@ -114,7 +114,6 @@ public class DefaultHandlerExceptionResolver implements HandlerExceptionResolver
 			}
 			errorCode = CommonErrorCodeTable.SERVER_BUSY.toErrorCode();
 		}
-		response.addHeader("Context-EX", "yes");
 		MediaType mediaType = WebUtils.getResponseMediaType(request);
 		SmartErrorView view = new SmartErrorView(errorCode, mediaType);
 		return new ModelAndView(view);

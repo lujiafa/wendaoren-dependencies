@@ -1,4 +1,4 @@
-package com.wendaoren.core.constant;
+package com.wendaoren.utils.constant;
 
 /**
  * @author Jon

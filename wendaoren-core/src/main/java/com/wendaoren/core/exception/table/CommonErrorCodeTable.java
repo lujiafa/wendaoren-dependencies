@@ -12,6 +12,7 @@ public enum CommonErrorCodeTable implements ErrorCodeTable {
 	SUCCESS(0, "OK"),
 
     INTERNAL_ERROR(1,"内部错误"),
+    INTERNAL_ERROR_P(1,"内部错误({0})"),
     SERVER_BUSY(2, "系统繁忙,请稍后再试"),
     NETWORK_ERROR(3, "网络异常，请稍后再试"),
     OPERATION_FAIL(4, "操作失败，请稍后再试"),

@@ -136,7 +136,7 @@ public final class ZipUtils {
 		try {
 			if (sourceFilePaths != null) {
 				List<File> sourceFileList = Arrays.stream(sourceFilePaths)
-						.filter(p -> p == null || p.length() == 0)
+						.filter(p -> p != null)
 						.map(p -> new File(p))
 						.filter(p -> p.exists())
 						.collect(Collectors.toList());

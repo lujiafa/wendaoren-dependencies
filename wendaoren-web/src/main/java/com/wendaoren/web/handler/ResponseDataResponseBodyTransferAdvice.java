@@ -1,14 +1,24 @@
 package com.wendaoren.web.handler;
 
+import com.wendaoren.utils.common.JsonUtils;
 import com.wendaoren.web.model.response.EmbedResponseData;
 import com.wendaoren.web.model.response.ResponseData;
+import com.wendaoren.web.prop.WebProperties;
+import com.wendaoren.web.view.SmartView;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.ModelAndViewDefiningException;
+import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+
+import javax.validation.constraints.NotNull;
+import java.util.Map;
 
 /**
  * @author jon
@@ -18,11 +28,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  */
 @ControllerAdvice
 public class ResponseDataResponseBodyTransferAdvice implements ResponseBodyAdvice<Object> {
+
+	private WebProperties webProperties;
+
+	public ResponseDataResponseBodyTransferAdvice(@NotNull WebProperties webProperties) {
+		this.webProperties = webProperties;
+	}
 	
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
 		if (ResponseData.class.isAssignableFrom(returnType.getParameterType())
-				|| EmbedResponseData.class.isAssignableFrom(returnType.getParameterType())) {
+			|| EmbedResponseData.class.isAssignableFrom(returnType.getParameterType())) {
 			return true;
 		}
 		return false;
@@ -32,7 +48,9 @@ public class ResponseDataResponseBodyTransferAdvice implements ResponseBodyAdvic
 	public Object beforeBodyWrite(Object body, MethodParameter returnType,
 			MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType,
 			ServerHttpRequest request, ServerHttpResponse response) {
-		// 暂未实现
+		if (webProperties.getResponse().isSerializationIgnoreNull() && body != null) {
+			return JsonUtils.convertValueIgnoreNull(body, Map.class);
+		}
 		return body;
 	}
 
