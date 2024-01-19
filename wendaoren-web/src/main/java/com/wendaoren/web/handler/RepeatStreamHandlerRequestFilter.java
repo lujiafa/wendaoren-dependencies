@@ -2,7 +2,7 @@ package com.wendaoren.web.handler;
 
 import com.wendaoren.core.exception.BusinessException;
 import com.wendaoren.core.exception.table.CommonErrorCodeTable;
-import com.wendaoren.web.util.WebUtils;
+import com.wendaoren.utils.web.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;

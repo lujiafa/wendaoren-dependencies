@@ -8,7 +8,7 @@ import java.util.List;
 @ConfigurationProperties(prefix = WebProperties.PROPERTIES_PREFIX)
 public class WebProperties {
 	
-	static final String PROPERTIES_PREFIX = "web";
+	static final String PROPERTIES_PREFIX = "wendaoren.web";
 
 	/** 是否禁用默认异常处理器。true-禁用 true-不禁用 **/
 	private boolean disableDefaultExceptionResolver = true;

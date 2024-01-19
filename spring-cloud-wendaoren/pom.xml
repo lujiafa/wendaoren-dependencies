@@ -17,8 +17,21 @@
         <spring-cloud-alibaba-dependencies.version>2021.0.4.0</spring-cloud-alibaba-dependencies.version>
     </properties>
 
+    <modules>
+        <module>spring-cloud-wendaoren-feign</module>
+        <module>spring-cloud-wendaoren-loadbalancer</module>
+        <module>spring-cloud-wendaoren-nacos</module>
+    </modules>
+
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>${spring-boot-starter-parent.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Spring Cloud依赖 -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>

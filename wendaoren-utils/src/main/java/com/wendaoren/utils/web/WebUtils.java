@@ -1,11 +1,8 @@
-package com.wendaoren.web.util;
+package com.wendaoren.utils.web;
 
-import com.wendaoren.utils.constant.SeparatorChar;
-import com.wendaoren.core.exception.BusinessException;
-import com.wendaoren.core.exception.ErrorCode;
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
 import com.wendaoren.utils.common.JsonUtils;
 import com.wendaoren.utils.common.XmlUtils;
+import com.wendaoren.utils.constant.SeparatorChar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -123,8 +120,8 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 	 * @Description 获取请求中所有参数集合
 	 * @param request
 	 */
-	public static Map<String, Object> getRequestAllParameters(HttpServletRequest request) {
-		Map<String, Object> uemap = getRequestUrlEncodedParameters(request);
+	public static Map<String, Object> getRequestAllParameters(HttpServletRequest request) throws IOException {
+		Map<String, Object> uemap = getRequestUrlParameters(request);
 		if (isHttpGet(request)) {
 			return uemap;
 		}
@@ -138,12 +135,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 	}
 	
 	/**
-	 * @Title getRequestUrlEncodedParameters
+	 * @Title getRequestUrlParameters
 	 * @Description 获取请求中参数集合，对应application/x-www-form-urlencoded部分参数
 	 * @param request
 	 */
 	@SuppressWarnings("unchecked")
-	public static Map<String, Object> getRequestUrlEncodedParameters(HttpServletRequest request) {
+	public static Map<String, Object> getRequestUrlParameters(HttpServletRequest request) {
 		Map<String, Object> uemap = (Map<String, Object>) request.getAttribute(ATTREBUTE_REQUEST_URLENCODE_READED);
 		if (uemap == null) {
 			Enumeration<String> names = request.getParameterNames();
@@ -169,8 +166,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 	 * @param request
 	 */
 	@SuppressWarnings("unchecked")
-	public static Map<String, Object> getRequestBodyParameters(HttpServletRequest request) {
-		try {
+	public static Map<String, Object> getRequestBodyParameters(HttpServletRequest request) throws IOException {
 			Map<String, Object> bmap = (Map<String, Object>) request.getAttribute(ATTREBUTE_REQUEST_STREAM_READED);
 			if (bmap != null) {
 				return bmap;
@@ -208,9 +204,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 				request.setAttribute(ATTREBUTE_REQUEST_STREAM_READED, bmap);
 			}
 			return bmap;
-		} catch (IOException e) {
-			throw new BusinessException(CommonErrorCodeTable.NOT_SUPPORT_PARAMS_TYPE_CONVERT.toErrorCode());
-		}
 	}
 	
 	/**
@@ -492,7 +485,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 		if (requestIp != null) {
 			return requestIp.trim();
 		}
-		throw new BusinessException(new ErrorCode(99, "获取请求IP信息失败"));
+		throw new RuntimeException("获取请求IP信息失败");
 	}
 	
 	/**

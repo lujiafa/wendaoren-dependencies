@@ -10,4 +10,6 @@ public interface CommonConstant {
 
     /** 空字符串 **/
     String EMPTY = "";
+
+
 }

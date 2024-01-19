@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = SecurityProperties.PREFIX)
 public class SecurityProperties {
-	public final static String PREFIX = "web.security";
+	public final static String PREFIX = "wendaoren.web.security";
 
 	/** 是否开启会话验证模块 **/
 	private boolean checkSession = true;

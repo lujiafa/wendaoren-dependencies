@@ -2,7 +2,7 @@ package com.wendaoren.websecurity.session;
 
 import com.wendaoren.core.exception.table.CommonErrorCodeTable;
 import com.wendaoren.utils.common.UUIDUtils;
-import com.wendaoren.web.util.WebUtils;
+import com.wendaoren.utils.web.WebUtils;
 import com.wendaoren.websecurity.constant.RedisScriptConstant;
 import com.wendaoren.websecurity.constant.SecurityConstant;
 import com.wendaoren.websecurity.exception.SessionException;

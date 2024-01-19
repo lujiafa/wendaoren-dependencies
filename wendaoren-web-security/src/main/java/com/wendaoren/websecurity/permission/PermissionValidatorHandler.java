@@ -2,7 +2,7 @@ package com.wendaoren.websecurity.permission;
 
 
 import com.wendaoren.utils.common.AnnotationUtils;
-import com.wendaoren.web.util.WebUtils;
+import com.wendaoren.utils.web.WebUtils;
 import com.wendaoren.websecurity.annotation.RequiresPermission;
 import com.wendaoren.websecurity.annotation.RequiresRole;
 import org.aspectj.lang.ProceedingJoinPoint;

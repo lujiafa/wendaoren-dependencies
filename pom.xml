@@ -14,11 +14,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipTests>true</skipTests>
+        <spring-boot-starter-parent.version>2.7.17</spring-boot-starter-parent.version>
     </properties>
 
     <modules>
         <module>wendaoren-core</module>
         <module>wendaoren-utils</module>
+        <module>wendaoren-access-log</module>
         <module>wendaoren-web</module>
         <module>wendaoren-web-security</module>
         <module>spring-cloud-wendaoren</module>
@@ -30,7 +32,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-parent</artifactId>
-                <version>2.7.17</version>
+                <version>${spring-boot-starter-parent.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

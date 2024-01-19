@@ -61,20 +61,18 @@ public class PageDataDTO<R, V> extends BaseDTO {
 	 * @return Long
 	 */
 	public Long getCurrentPage() {
-		if (null == currentPage) {
-			currentPage = DEFAULT_CURRENT_PAGE;
-		} else if (currentPage <= 1) {
-			currentPage = DEFAULT_CURRENT_PAGE;
+		if (null == currentPage || currentPage < 1) {
+			return DEFAULT_CURRENT_PAGE;
 		} else if (null != this.totalRecords && null != this.pageSize && 0 != this.pageSize
 				&& currentPage >= getTotalPages()) {
-			currentPage = getTotalPages();
+			return getTotalPages();
 		}
 		return currentPage;
 	}
 
 	public Long getPageSize() {
 		if (pageSize == null) {
-			pageSize = DEFAULT_PAGE_SIZE;
+			return DEFAULT_PAGE_SIZE;
 		}
 		return pageSize;
 	}

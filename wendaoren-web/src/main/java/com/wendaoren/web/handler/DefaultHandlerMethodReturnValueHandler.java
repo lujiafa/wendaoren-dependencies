@@ -3,7 +3,7 @@ package com.wendaoren.web.handler;
 import com.wendaoren.web.model.response.EmbedResponseData;
 import com.wendaoren.web.model.response.ResponseData;
 import com.wendaoren.web.prop.WebProperties;
-import com.wendaoren.web.util.WebUtils;
+import com.wendaoren.utils.web.WebUtils;
 import com.wendaoren.web.view.SmartView;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;

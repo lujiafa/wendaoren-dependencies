@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wendaoren.core.exception.table.CommonErrorCodeTable;
 import com.wendaoren.web.model.BaseDTO;
 import com.wendaoren.web.model.BaseForm;
-import com.wendaoren.web.util.WebUtils;
+import com.wendaoren.utils.web.WebUtils;
 import com.wendaoren.web.view.SmartErrorView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

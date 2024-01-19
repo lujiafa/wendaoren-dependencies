@@ -22,7 +22,7 @@ public final class MapUtils {
 	 * @param key 键
 	 * @return 值
 	 */
-	public static <T extends Object> T getIgnoreCase(Map<String, T> map, String key) {
+	public static <T> T getIgnoreCase(Map<String, T> map, String key) {
 		Assert.notNull(map, "parameter object map cannot be null.");
 		Iterator<Entry<String, T>> iterator = map.entrySet().iterator();
 		while (iterator.hasNext()) {

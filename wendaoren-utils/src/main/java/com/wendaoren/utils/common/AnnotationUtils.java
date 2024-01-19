@@ -17,7 +17,7 @@ public class AnnotationUtils extends org.springframework.core.annotation.Annotat
 	 * @param clazz
 	 * @return T
 	 */
-	public static <T extends Annotation> T getAnnotationByPriorityMethod(Method method, Class<T> clazz) {
+	public static <T extends Annotation> T getAnnotationByPriorityMethod(Method method, Class<T> clazz, Class<?> ...classFilters) {
 		T t = findAnnotation(method, clazz);
 		if (t == null) {
 			t = findAnnotation(method.getDeclaringClass(), clazz);

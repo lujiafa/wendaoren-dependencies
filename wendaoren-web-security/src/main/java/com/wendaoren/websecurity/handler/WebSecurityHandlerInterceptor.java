@@ -5,7 +5,7 @@ import com.wendaoren.core.exception.table.CommonErrorCodeTable;
 import com.wendaoren.utils.common.AnnotationUtils;
 import com.wendaoren.utils.common.MapUtils;
 import com.wendaoren.utils.constant.CommonConstant;
-import com.wendaoren.web.util.WebUtils;
+import com.wendaoren.utils.web.WebUtils;
 import com.wendaoren.web.view.SmartErrorView;
 import com.wendaoren.websecurity.annotation.*;
 import com.wendaoren.websecurity.constant.SecurityConstant;
@@ -70,6 +70,7 @@ public class WebSecurityHandlerInterceptor implements HandlerInterceptor, Filter
                 }
                 Map<String, String> parameterMap = null;
                 if (securityProperties.isCheckSign()) {
+                    WebUtils.getRequestAllParameters(request);
                     parameterMap = MapUtils.toStringMap(WebUtils.getRequestAllParameters(request));
                     checkSign(request, response, method, parameterMap);
                 }

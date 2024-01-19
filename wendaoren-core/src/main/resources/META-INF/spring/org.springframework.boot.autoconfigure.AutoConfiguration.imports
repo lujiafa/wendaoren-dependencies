@@ -1,0 +1,2 @@
+com.wendaoren.core.autoconfigure.CoreAutoConfiguration
+com.wendaoren.core.autoconfigure.CoreTaskExecutionAutoConfiguration

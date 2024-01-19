@@ -5,7 +5,7 @@ import com.wendaoren.core.exception.BusinessException;
 import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.core.exception.table.CommonErrorCodeTable;
 import com.wendaoren.web.prop.WebProperties;
-import com.wendaoren.web.util.WebUtils;
+import com.wendaoren.utils.web.WebUtils;
 import com.wendaoren.web.view.SmartErrorView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
