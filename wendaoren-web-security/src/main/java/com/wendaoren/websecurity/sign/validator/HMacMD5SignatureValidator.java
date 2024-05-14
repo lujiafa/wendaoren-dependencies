@@ -6,7 +6,6 @@ import com.wendaoren.websecurity.exception.SignatureException;
 import com.wendaoren.websecurity.exception.table.WebSecurityErrorCodeTable;
 import com.wendaoren.websecurity.sign.AbstractSignatureValidator;
 import com.wendaoren.websecurity.util.SignUtils;
-import org.aspectj.weaver.SignatureUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
