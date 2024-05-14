@@ -15,6 +15,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipTests>true</skipTests>
         <spring-boot-starter-parent.version>2.7.18</spring-boot-starter-parent.version>
+        <com.wendaoren.version>2.7.1-SNAPSHOT</com.wendaoren.version>
     </properties>
 
     <modules>

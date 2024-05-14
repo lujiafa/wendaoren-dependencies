@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.wendaoren</groupId>
             <artifactId>wendaoren-web</artifactId>
-            <version>${project.version}</version>
+            <version>${com.wendaoren.version}</version>
         </dependency>
     </dependencies>
 
