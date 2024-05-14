@@ -22,7 +22,7 @@
 ##### 3.1 Session会话模块
 会话模块默认为启用状态，不使用可能会影响鉴权等功能。若想要明确关闭此功能，可设置配置`web.security.checkSession=false`关闭。
 * Session相关配置<br>
-  可查看`com.tchain.websecurity.prop.SecurityProperties.SessionProperties`类。
+  可查看`com.wendaoren.websecurity.prop.SecurityProperties.SessionProperties`类。
 * 自主实现用户登录，登录成功时通过`SessionContext`创建并保存会话数据。如下示例:
 ```java
 public ResponseData login(...) {
@@ -90,7 +90,7 @@ public ResponseData login(...) {
         ...
 }
 ```
-* 若`HMacMd5`仍不满足业务验签要求，可通过继承`com.tchain.websecurity.sign.AbstractSignatureValidator`或实现接口`com.tchain.websecurity.sign.SignatureValidator`来实现自定义签名验证器，自定义实现后通过`@Bean`生成对象到spring容器即可替换默认签名验证器。
+* 若`HMacMd5`仍不满足业务验签要求，可通过继承`com.wendaoren.websecurity.sign.AbstractSignatureValidator`或实现接口`com.wendaoren.websecurity.sign.SignatureValidator`来实现自定义签名验证器，自定义实现后通过`@Bean`生成对象到spring容器即可替换默认签名验证器。
 
 ###### 3.3 防重放
 作用为防止终端底层或有人恶意抓包重放请求，默认为关闭，可以通过`web.security.checkRepeat=true`开启。

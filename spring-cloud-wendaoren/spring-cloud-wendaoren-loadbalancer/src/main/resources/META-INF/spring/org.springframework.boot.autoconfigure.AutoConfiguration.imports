@@ -1,1 +1,1 @@
-com.tchain.springcloud.loadbalancer.autoconfigure.SpringCloudLoadBalancerAutoConfiguration
+com.wendaoren.springcloud.loadbalancer.autoconfigure.SpringCloudLoadBalancerAutoConfiguration

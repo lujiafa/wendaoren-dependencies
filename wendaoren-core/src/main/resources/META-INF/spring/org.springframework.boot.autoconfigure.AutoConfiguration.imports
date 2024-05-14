@@ -1,2 +1,2 @@
-com.tchain.core.autoconfigure.CoreAutoConfiguration
-com.tchain.core.autoconfigure.CoreTaskExecutionAutoConfiguration
+com.wendaoren.core.autoconfigure.CoreAutoConfiguration
+com.wendaoren.core.autoconfigure.CoreTaskExecutionAutoConfiguration
