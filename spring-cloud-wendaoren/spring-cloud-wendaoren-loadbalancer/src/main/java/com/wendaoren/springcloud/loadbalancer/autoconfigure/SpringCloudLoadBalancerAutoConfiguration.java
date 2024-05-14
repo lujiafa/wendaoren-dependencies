@@ -30,7 +30,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.Servlet;
+import jakarta.servlet.Servlet;
 import java.beans.Introspector;
 
 @AutoConfiguration

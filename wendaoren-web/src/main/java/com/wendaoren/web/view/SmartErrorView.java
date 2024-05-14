@@ -6,7 +6,7 @@ import com.wendaoren.web.model.response.ResponseData;
 import com.wendaoren.web.util.SupportDefaultErrorPageTemplate;
 import org.springframework.http.MediaType;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class SmartErrorView extends SmartView {
 	

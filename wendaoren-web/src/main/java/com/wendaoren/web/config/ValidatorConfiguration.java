@@ -3,7 +3,7 @@ package com.wendaoren.web.config;
 import com.wendaoren.web.validation.util.ValidatorUtils;
 import org.springframework.context.annotation.Bean;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 /**
  * @date 2019年5月30日

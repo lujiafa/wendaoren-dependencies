@@ -26,7 +26,7 @@ public class NacosAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnClass(javax.servlet.Filter.class)
+	@ConditionalOnClass(jakarta.servlet.Filter.class)
 	public FilterRegistrationBean<ServiceStatusFilter> hintRequestFilterRegistrationBean() {
 		FilterRegistrationBean<ServiceStatusFilter> requestSerialRegistration = new FilterRegistrationBean<ServiceStatusFilter>();
 		requestSerialRegistration.setFilter(new ServiceStatusFilter());

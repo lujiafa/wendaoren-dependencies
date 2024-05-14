@@ -4,6 +4,7 @@ import com.wendaoren.springcloud.feign.anotation.AutoFeign;
 import com.wendaoren.springcloud.feign.constant.FeignConstant;
 import com.wendaoren.utils.common.AnnotationUtils;
 import com.wendaoren.utils.constant.CommonConstant;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -21,7 +22,6 @@ import org.springframework.web.servlet.mvc.condition.RequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;

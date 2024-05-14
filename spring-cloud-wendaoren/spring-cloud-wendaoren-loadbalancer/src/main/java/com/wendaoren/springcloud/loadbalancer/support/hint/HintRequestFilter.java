@@ -1,7 +1,7 @@
 package com.wendaoren.springcloud.loadbalancer.support.hint;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 public class HintRequestFilter implements Filter {

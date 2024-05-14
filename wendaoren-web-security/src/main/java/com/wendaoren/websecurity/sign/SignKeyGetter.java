@@ -1,6 +1,6 @@
 package com.wendaoren.websecurity.sign;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 
 /**

@@ -10,7 +10,7 @@ import com.wendaoren.websecurity.session.Session;
 import com.wendaoren.websecurity.session.SessionContext;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.Map;
 

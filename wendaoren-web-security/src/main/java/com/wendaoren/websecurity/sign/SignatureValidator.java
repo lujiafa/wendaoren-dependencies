@@ -3,7 +3,7 @@ package com.wendaoren.websecurity.sign;
 import com.wendaoren.websecurity.annotation.CheckSign;
 import com.wendaoren.websecurity.exception.SignatureException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.Map;
 

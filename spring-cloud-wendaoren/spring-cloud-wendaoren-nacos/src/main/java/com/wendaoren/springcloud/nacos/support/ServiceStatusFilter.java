@@ -4,8 +4,8 @@ import com.wendaoren.springcloud.nacos.context.ServiceContext;
 import com.wendaoren.springcloud.nacos.type.ServiceStatus;
 import org.springframework.http.HttpStatus;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class ServiceStatusFilter implements Filter {

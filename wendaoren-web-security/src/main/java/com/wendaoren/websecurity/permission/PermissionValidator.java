@@ -5,7 +5,7 @@ import com.wendaoren.websecurity.annotation.RequiresPermission;
 import com.wendaoren.websecurity.annotation.RequiresRole;
 import com.wendaoren.websecurity.exception.PermissionException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 
 @FunctionalInterface

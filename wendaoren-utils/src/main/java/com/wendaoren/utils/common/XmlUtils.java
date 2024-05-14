@@ -1,5 +1,8 @@
 package com.wendaoren.utils.common;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -9,9 +12,6 @@ import org.jdom2.output.XMLOutputter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;

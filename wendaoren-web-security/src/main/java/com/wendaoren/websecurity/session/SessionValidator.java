@@ -3,7 +3,7 @@ package com.wendaoren.websecurity.session;
 import com.wendaoren.websecurity.annotation.CheckSession;
 import com.wendaoren.websecurity.exception.SessionException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 
 /**
