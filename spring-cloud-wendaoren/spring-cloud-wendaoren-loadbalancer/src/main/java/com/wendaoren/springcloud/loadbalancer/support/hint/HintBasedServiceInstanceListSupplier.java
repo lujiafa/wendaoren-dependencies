@@ -1,5 +1,6 @@
 package com.wendaoren.springcloud.loadbalancer.support.hint;
 
+import com.wendaoren.springcloud.loadbalancer.constant.LoadBalancerConstant;
 import com.wendaoren.utils.constant.CommonConstant;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.HintRequestContext;
@@ -78,24 +79,40 @@ public class HintBasedServiceInstanceListSupplier extends org.springframework.cl
     }
 
     protected List<ServiceInstance> filteredByHint(List<ServiceInstance> instances, String hint) {
+        Iterator var4 = instances.iterator();
+        List<ServiceInstance> defaultInstances = new ArrayList();
         if (!StringUtils.hasText(hint)) {
-            return instances;
-        } else {
-            List<ServiceInstance> filteredInstances = new ArrayList();
-            Iterator var4 = instances.iterator();
-
             while(var4.hasNext()) {
                 ServiceInstance serviceInstance = (ServiceInstance)var4.next();
-                if (((String)serviceInstance.getMetadata().getOrDefault("hint", CommonConstant.EMPTY)).equals(hint)) {
-                    filteredInstances.add(serviceInstance);
+                String metaHint = serviceInstance.getMetadata().get(LoadBalancerConstant.METADATA_HINT_NAME);
+                if (!StringUtils.hasText(metaHint)) {
+                    defaultInstances.add(serviceInstance);
                 }
             }
-
-            if (filteredInstances.size() > 0) {
-                return filteredInstances;
-            } else {
-                return instances;
+            if (defaultInstances.size() > 0) {
+                return defaultInstances;
             }
+            return instances;
+        }
+
+        List<ServiceInstance> filteredInstances = new ArrayList();
+        while(var4.hasNext()) {
+            ServiceInstance serviceInstance = (ServiceInstance)var4.next();
+            String metaHint = serviceInstance.getMetadata().get(LoadBalancerConstant.METADATA_HINT_NAME);
+            if (!StringUtils.hasText(metaHint)) {
+                defaultInstances.add(serviceInstance);
+                continue;
+            }
+            if (metaHint.equals(hint)) {
+                filteredInstances.add(serviceInstance);
+            }
+        }
+        if (filteredInstances.size() > 0) {
+            return filteredInstances;
+        } else if (defaultInstances.size() > 0) {
+            return defaultInstances;
+        } else {
+            return instances;
         }
     }
 }
