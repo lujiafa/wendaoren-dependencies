@@ -6,12 +6,12 @@ public class HintRequestAcrossThreadProcessor implements AcrossThreadProcessor<S
 
     @Override
     public String parentGet() {
-        return HintContext.get();
+        return HintContext.get().getXHint();
     }
 
     @Override
     public void childExecuteBefore(Thread parentThread, String value) {
-        HintContext.set(value);
+        HintContext.setX(value);
     }
 
     @Override
