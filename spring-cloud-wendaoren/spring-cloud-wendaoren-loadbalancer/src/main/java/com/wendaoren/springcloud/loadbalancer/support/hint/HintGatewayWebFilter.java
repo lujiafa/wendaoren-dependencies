@@ -1,5 +1,6 @@
 package com.wendaoren.springcloud.loadbalancer.support.hint;
 
+import com.wendaoren.springcloud.loadbalancer.constant.LoadBalancerConstant;
 import com.wendaoren.springcloud.loadbalancer.prop.SpringCloudLoadBalancerProperties;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -18,7 +19,7 @@ public class HintGatewayWebFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         if (springCloudLoadBalancerProperties.getHint().isEnableGatewayRequestHeader()) {
             ServerWebExchange removeRequestHintExchange = exchange.mutate()
-                    .request(request -> request.headers(headers -> headers.remove(HintContext.HINT_ATTR_NAME)))
+                    .request(request -> request.headers(headers -> headers.remove(LoadBalancerConstant.REQUEST_CONTEXT_HINT_NAME)))
                     .build();
             return chain.filter(removeRequestHintExchange).then(Mono.fromRunnable(() -> {
                 HintContext.remove();
