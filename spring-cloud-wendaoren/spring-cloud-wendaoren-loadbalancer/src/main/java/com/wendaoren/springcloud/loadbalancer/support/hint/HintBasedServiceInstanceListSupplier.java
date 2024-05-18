@@ -1,7 +1,6 @@
 package com.wendaoren.springcloud.loadbalancer.support.hint;
 
 import com.wendaoren.springcloud.loadbalancer.constant.LoadBalancerConstant;
-import com.wendaoren.utils.constant.CommonConstant;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.HintRequestContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
@@ -39,42 +38,36 @@ public class HintBasedServiceInstanceListSupplier extends org.springframework.cl
     }
 
     protected String getHint(Object requestContext) {
-        if (requestContext == null) {
-            return null;
-        } else {
-            String hint = null;
-            if (requestContext instanceof RequestDataContext) {
-                hint = this.getHintFromHeader((RequestDataContext)requestContext);
+        String hint = null;
+        if (requestContext instanceof RequestDataContext) {
+            RequestDataContext context = (RequestDataContext) requestContext;
+            if (context.getClientRequest() != null) {
+                HttpHeaders headers = context.getClientRequest().getHeaders();
+                if (headers != null && StringUtils.hasText(hint = headers.getFirst(this.properties.getHintHeaderName()))) {
+                    return hint;
+                }
             }
+        }
 
-            if (!StringUtils.hasText(hint) && requestContext instanceof HintRequestContext) {
-                hint = ((HintRequestContext)requestContext).getHint();
-            }
-
+        HintContext.InnerHintData innerHintData = HintContext.get();
+        if (StringUtils.hasText(hint = innerHintData.getHint())) {
             return hint;
         }
-    }
 
-    protected String getHintFromHeader(RequestDataContext context) {
-        if (context.getClientRequest() == null) {
-            return null;
-        }
-        HttpHeaders headers = context.getClientRequest().getHeaders();
-        if (headers == null) {
-            return null;
-        }
-        String hint = properties.getHint().get(getServiceId());
-        if (StringUtils.hasText(hint)) {
+        if (requestContext instanceof HintRequestContext
+                && StringUtils.hasText(hint = ((HintRequestContext)requestContext).getHint())) {
             return hint;
         }
-        if (HintContext.HINT_ATTR_NAME.equals(properties.getHintHeaderName())) {
-            hint = headers.getFirst(this.properties.getHintHeaderName());
-        } else {
-            hint = headers.getFirst(this.properties.getHintHeaderName());
-            if (!StringUtils.hasText(hint)) {
-                hint = headers.getFirst(HintContext.HINT_ATTR_NAME);
+
+        // 与注释代码等价
+        hint = innerHintData.getXHint();
+        /*RequestDataContext context = (RequestDataContext)requestContext;
+        if (context.getClientRequest() != null) {
+            HttpHeaders headers = context.getClientRequest().getHeaders();
+            if (headers != null) {
+                hint = headers.getFirst(LoadBalancerConstant.REQUEST_CONTEXT_HINT_NAME);
             }
-        }
+        }*/
         return hint;
     }
 
