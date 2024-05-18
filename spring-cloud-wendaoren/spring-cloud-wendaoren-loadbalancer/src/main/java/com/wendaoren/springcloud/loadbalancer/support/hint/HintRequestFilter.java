@@ -1,5 +1,6 @@
 package com.wendaoren.springcloud.loadbalancer.support.hint;
 
+import com.wendaoren.springcloud.loadbalancer.constant.LoadBalancerConstant;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -11,7 +12,7 @@ public class HintRequestFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         if (request instanceof HttpServletRequest) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
-            HintContext.set(httpRequest.getHeader(HintContext.HINT_ATTR_NAME));
+            HintContext.set(httpRequest.getHeader(LoadBalancerConstant.REQUEST_CONTEXT_HINT_NAME));
         }
         filterChain.doFilter(request, response);
         HintContext.remove();
