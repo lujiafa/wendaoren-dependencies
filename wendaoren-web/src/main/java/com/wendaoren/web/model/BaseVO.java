@@ -1,6 +1,6 @@
 package com.wendaoren.web.model;
 
-import com.wendaoren.core.model.IModel;
+import java.io.Serializable;
 
 /**
  * @ClassName: BaseVO
@@ -9,7 +9,7 @@ import com.wendaoren.core.model.IModel;
  * @date 2016年12月26日
  * @Description: 表现层(View Object)超类
  */
-public class BaseVO implements IModel {
+public class BaseVO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
