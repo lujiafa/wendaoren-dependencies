@@ -1,11 +1,13 @@
 package com.wendaoren.web.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
+import com.wendaoren.core.constant.ErrorCodeConstant;
+import com.wendaoren.core.exception.ErrorCode;
+import com.wendaoren.utils.web.WebUtils;
 import com.wendaoren.web.model.BaseDTO;
 import com.wendaoren.web.model.BaseForm;
-import com.wendaoren.utils.web.WebUtils;
 import com.wendaoren.web.view.SmartErrorView;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
@@ -16,7 +18,6 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.ModelAndViewDefiningException;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -52,7 +53,7 @@ public class DefaultHandlerMethodArgumentResolver implements HandlerMethodArgume
 		} catch (Exception e) {
 			logger.error("参数解析异常|" + e.getMessage(), e);
 			throw new ModelAndViewDefiningException(new ModelAndView(
-					new SmartErrorView(CommonErrorCodeTable.NOT_SUPPORT_PARAMS_TYPE_CONVERT.toErrorCode(), WebUtils.getResponseMediaType(request))));
+					new SmartErrorView(ErrorCode.build(ErrorCodeConstant.NOT_SUPPORTED_PARAMETER_TYPE_CONVERSION, request.getLocale()), WebUtils.getResponseMediaType(request))));
 		}
 	}
 

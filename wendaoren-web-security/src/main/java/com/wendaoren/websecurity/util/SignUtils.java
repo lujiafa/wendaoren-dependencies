@@ -1,7 +1,8 @@
 package com.wendaoren.websecurity.util;
 
+import com.wendaoren.core.constant.ErrorCodeConstant;
 import com.wendaoren.core.exception.BusinessException;
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
+import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.utils.crypto.Base64;
 import com.wendaoren.utils.crypto.HMacMD5;
 import com.wendaoren.utils.crypto.MD5;
@@ -39,7 +40,7 @@ public class SignUtils {
 		try {
             return HexUtils.toHex(MD5.encrypt(stringBuilder.toString(), StandardCharsets.UTF_8.name()));
 		} catch (Exception e) {
-			throw new BusinessException(CommonErrorCodeTable.OPERATION_FAIL_P.toErrorCode("签名 - " + e.getMessage()));
+			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
 		}
 	}
 
@@ -69,7 +70,7 @@ public class SignUtils {
 		try {
             return HexUtils.toHex(HMacMD5.encryptHMAC(stringBuilder.toString(), signKey, StandardCharsets.UTF_8.name()));
 		} catch (Exception e) {
-			throw new BusinessException(CommonErrorCodeTable.OPERATION_FAIL_P.toErrorCode("签名 - " + e.getMessage()));
+			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
 		}
 	}
 
@@ -87,7 +88,7 @@ public class SignUtils {
 		try {
 			return Base64.encode(RSA.signMD5WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(privateKey)));
 		} catch (Exception e) {
-			throw new BusinessException(CommonErrorCodeTable.OPERATION_FAIL_P.toErrorCode("签名失败 - " + e.getMessage()));
+			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
 		}
 	}
 
@@ -105,7 +106,7 @@ public class SignUtils {
 		try {
 			return Base64.encode(RSA.signSHA1WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(privateKeyBase64)));
 		} catch (Exception e) {
-			throw new BusinessException(CommonErrorCodeTable.OPERATION_FAIL_P.toErrorCode("签名失败 - " + e.getMessage()));
+			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
 		}
 	}
 
@@ -123,7 +124,7 @@ public class SignUtils {
 		try {
 			return Base64.encode(RSA.signSHA256WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(privateKey)));
 		} catch (Exception e) {
-			throw new BusinessException(CommonErrorCodeTable.OPERATION_FAIL_P.toErrorCode("签名失败 - " + e.getMessage()));
+			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
 		}
 	}
 
@@ -143,7 +144,7 @@ public class SignUtils {
 		try {
 			return sign.equalsIgnoreCase(HexUtils.toHex(HMacMD5.encryptHMAC(stringBuilder.toString(), signKey, StandardCharsets.UTF_8.name())));
 		} catch (Exception e) {
-			throw new BusinessException(CommonErrorCodeTable.OPERATION_FAIL_P.toErrorCode("验证签名 - " + e.getMessage()));
+			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, new Object[]{e.getMessage()}));
 		}
 	}
 
@@ -163,7 +164,7 @@ public class SignUtils {
 		try {
 			return RSA.signVerifyMD5WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(publicKey), Base64.decode(sign));
 		} catch (Exception e) {
-			throw new BusinessException(CommonErrorCodeTable.OPERATION_FAIL_P.toErrorCode("验证签名 - " + e.getMessage()));
+			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, new Object[]{e.getMessage()}));
 		}
 	}
 
@@ -183,7 +184,7 @@ public class SignUtils {
 		try {
 			return RSA.signVerifySHA1WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(publicKey), Base64.decode(sign));
 		} catch (Exception e) {
-			throw new BusinessException(CommonErrorCodeTable.OPERATION_FAIL_P.toErrorCode("验证签名 - " + e.getMessage()));
+			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, new Object[]{e.getMessage()}));
 		}
 	}
 
@@ -203,7 +204,7 @@ public class SignUtils {
 		try {
 			return RSA.signVerifySHA256WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(publicKey), Base64.decode(sign));
 		} catch (Exception e) {
-			throw new BusinessException(CommonErrorCodeTable.OPERATION_FAIL_P.toErrorCode("验证签名 - " + e.getMessage()));
+			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, new Object[]{e.getMessage()}));
 		}
 	}
 

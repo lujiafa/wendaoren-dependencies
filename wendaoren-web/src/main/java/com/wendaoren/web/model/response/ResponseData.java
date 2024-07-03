@@ -1,10 +1,12 @@
 package com.wendaoren.web.model.response;
 
+import com.wendaoren.core.constant.ErrorCodeConstant;
 import com.wendaoren.core.exception.ErrorCode;
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
+import com.wendaoren.utils.web.WebUtils;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 /**
  * @ClassName ResponseData
@@ -18,8 +20,8 @@ public class ResponseData<T> implements Serializable {
 	/** 当响应为失败/错误内容时，可忽略字段名称 **/
 	public final static String DATA_FILTER_FIELD = "data";
 	
-	private int code = CommonErrorCodeTable.SUCCESS.getCode();
-	private String message = CommonErrorCodeTable.SUCCESS.getMessage();
+	private int code = ErrorCodeConstant.SUCCESS;
+	private String message = ErrorCodeConstant.SUCCESS_MESSAGE;
 	private T data;
 	
 	public int getCode() {
@@ -52,16 +54,34 @@ public class ResponseData<T> implements Serializable {
 	 * @return true-成功
 	 */
 	public boolean hasSuccess() {
-		return ((Integer) CommonErrorCodeTable.SUCCESS.getCode()).equals(code);
+		return ErrorCodeConstant.SUCCESS.equals(code);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static <T> ResponseData<T> success() {
-		return (ResponseData<T>) success(null);
+		return new ResponseData<T>();
+	}
+
+	public static <T> ResponseData<T> success(T data) {
+		ResponseData<T> responseData = new ResponseData<>();
+		responseData.setData(data);
+		return responseData;
+	}
+
+	public static <T> ResponseData<T> success(Locale locale) {
+		return success(locale, null);
 	}
 	
-	public static <T> ResponseData<T> success(T data) {
+	public static <T> ResponseData<T> success(Locale locale, T data) {
+		Locale currentLocale = locale;
+		if (currentLocale == null) {
+			try {
+				currentLocale = WebUtils.getRequest().getLocale();
+			} catch (Throwable e) {}
+		}
+		ErrorCode errorCode = ErrorCode.build(ErrorCodeConstant.SUCCESS, currentLocale);
 		ResponseData<T> responseData = new ResponseData<T>();
+		responseData.setCode(errorCode.getCode());
+		responseData.setMessage(errorCode.getMessage());
 		responseData.setData(data);
 		return responseData;
 	}
@@ -70,14 +90,12 @@ public class ResponseData<T> implements Serializable {
 		Assert.notNull(errorCode, "parameter errorCode cannot be null.");
 		return fail(errorCode.getCode(), errorCode.getMessage());
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public static <T> ResponseData<T> fail(int code, String message) {
-		Assert.hasText(message, "parameter message cannot be empty.");
-		ResponseData<Object> responseData = new ResponseData<Object>();
+		ResponseData<T> responseData = new ResponseData<T>();
 		responseData.setCode(code);
 		responseData.setMessage(message);
-		return (ResponseData<T>) responseData;
+		return responseData;
 	}
 	
 }
