@@ -1,7 +1,7 @@
 package com.wendaoren.websecurity.handler;
 
-import com.wendaoren.core.exception.BusinessException;
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
+import com.wendaoren.core.constant.ErrorCodeConstant;
+import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.utils.common.AnnotationUtils;
 import com.wendaoren.utils.common.MapUtils;
 import com.wendaoren.utils.constant.CommonConstant;
@@ -105,8 +105,8 @@ public class WebSecurityHandlerInterceptor implements HandlerInterceptor, Filter
             sessionValidator.verify(request, method, checkSession);
             request.setAttribute(SecurityConstant.SESSION_VALIDATOR_HANDLED_ATTR_NAME, true);
         } catch (SessionException e) {
-            if (CommonErrorCodeTable.SESSION_EXPIRED.getCode() == (e.getErrorCode().getCode())
-                    || CommonErrorCodeTable.SESSION_KICK_OUT_EXPIRED.getCode() == (e.getErrorCode().getCode())) {
+            if (ErrorCodeConstant.SESSION_EXPIRED.equals(e.getErrorCode().getCode())
+                    || ErrorCodeConstant.SESSION_KICK_OUT_EXPIRED.equals(e.getErrorCode().getCode())) {
                 MediaType mediaType = WebUtils.getResponseMediaType(request);
                 if (StringUtils.hasLength(securityProperties.getSession().getLoginUrl())
                         && (MediaType.TEXT_HTML.includes(mediaType)
@@ -142,12 +142,12 @@ public class WebSecurityHandlerInterceptor implements HandlerInterceptor, Filter
             requestId = parameterMap.get(SecurityConstant.PARAM_REQUEST_ID_NAME);
         }
         if (!StringUtils.hasLength(requestId)) {
-            throw new SignatureException(CommonErrorCodeTable.PARAMS_EMPTY_P.toErrorCode(SecurityConstant.PARAM_REQUEST_ID_NAME));
+            throw new SignatureException(ErrorCode.build(ErrorCodeConstant.PARAMETER_ERROR, request.getLocale(), new Object[]{SecurityConstant.PARAM_REQUEST_ID_NAME}));
         }
         // 防重放验证
         String cacheKey = String.format("common:repeat-request:%s", requestId);
         if (redisTemplate.boundValueOps(cacheKey).setIfAbsent(CommonConstant.EMPTY, 900, TimeUnit.SECONDS)) {
-           throw new BusinessException(CommonErrorCodeTable.REQUEST_REPEAT.toErrorCode());
+            throw new SignatureException(ErrorCode.build(ErrorCodeConstant.REQUEST_REPEAT, request.getLocale()));
         }
     }
 }

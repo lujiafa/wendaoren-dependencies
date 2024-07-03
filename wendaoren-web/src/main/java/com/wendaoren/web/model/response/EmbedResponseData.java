@@ -1,8 +1,7 @@
 package com.wendaoren.web.model.response;
 
+import com.wendaoren.core.constant.ErrorCodeConstant;
 import com.wendaoren.core.exception.ErrorCode;
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
-import com.wendaoren.core.model.IModel;
 import org.springframework.util.Assert;
 
 import java.beans.BeanInfo;
@@ -10,6 +9,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -30,18 +30,19 @@ public class EmbedResponseData extends LinkedHashMap<String, Object> {
 	 * @return true-成功
 	 */
 	public boolean hasSuccess() {
-		return ((Integer) CommonErrorCodeTable.SUCCESS.getCode()).equals(get(CODE_NAME));
+		return ErrorCodeConstant.SUCCESS.equals(get(CODE_NAME));
 	}
 
-	public static EmbedResponseData success() {
+	public static EmbedResponseData success(Locale locale) {
 		EmbedResponseData responseData = new EmbedResponseData();
-		responseData.put(CODE_NAME, CommonErrorCodeTable.SUCCESS.getCode());
-		responseData.put(MESSAGE_NAME, CommonErrorCodeTable.SUCCESS.getMessage());
+		ErrorCode errorCode = ErrorCode.build(ErrorCodeConstant.SUCCESS, locale);
+		responseData.put(CODE_NAME,errorCode.getCode());
+		responseData.put(MESSAGE_NAME, errorCode.getMessage());
 		return responseData;
 	}
 
-	public static EmbedResponseData success(Map<String, Object> data) {
-		EmbedResponseData responseData = success();
+	public static EmbedResponseData success(Locale locale, Map<String, Object> data) {
+		EmbedResponseData responseData = success(locale);
 		if (data == null) {
 			return responseData;
 		}
@@ -49,8 +50,8 @@ public class EmbedResponseData extends LinkedHashMap<String, Object> {
 		return responseData;
 	}
 
-	public static EmbedResponseData success(IModel data) {
-		EmbedResponseData responseData = success();
+	public static EmbedResponseData success(Locale locale, Object data) {
+		EmbedResponseData responseData = success(locale);
 		if (data == null) {
 			return responseData;
 		}
@@ -58,13 +59,12 @@ public class EmbedResponseData extends LinkedHashMap<String, Object> {
 		return responseData;
 	}
 
-	public static EmbedResponseData fial(ErrorCode errorCode) {
+	public static EmbedResponseData fail(ErrorCode errorCode) {
 		Assert.notNull(errorCode, "parameter errorCode cannot be null.");
 		return fail(errorCode.getCode(), errorCode.getMessage());
 	}
 
 	public static EmbedResponseData fail(int code, String message) {
-		Assert.hasText(message, "parameter message cannot be empty.");
 		EmbedResponseData responseData = new EmbedResponseData();
 		responseData.put(CODE_NAME, code);
 		responseData.put(MESSAGE_NAME, message);

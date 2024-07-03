@@ -1,7 +1,8 @@
 package com.wendaoren.web.handler;
 
+import com.wendaoren.core.constant.ErrorCodeConstant;
 import com.wendaoren.core.exception.BusinessException;
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
+import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.utils.web.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +134,7 @@ public class RepeatStreamHandlerRequestFilter implements Filter {
 				is.close();
 			} catch (Exception e) {
 				logger.error("获取请求数据异常|{}", e.getMessage(), e);
-				throw new BusinessException(CommonErrorCodeTable.DATA_LOAD_FAIL.toErrorCode(), e);
+				throw new BusinessException(ErrorCode.build(ErrorCodeConstant.DATA_LOADING_FAILED, getRequest().getLocale()), e);
 			}
 		}
 	}

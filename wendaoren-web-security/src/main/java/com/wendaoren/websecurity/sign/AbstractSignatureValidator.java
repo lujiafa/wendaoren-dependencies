@@ -1,10 +1,10 @@
 package com.wendaoren.websecurity.sign;
 
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
+import com.wendaoren.core.constant.ErrorCodeConstant;
+import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.websecurity.annotation.CheckSign;
 import com.wendaoren.websecurity.constant.SecurityConstant;
 import com.wendaoren.websecurity.exception.SignatureException;
-import com.wendaoren.websecurity.exception.table.WebSecurityErrorCodeTable;
 import com.wendaoren.websecurity.prop.SecurityProperties;
 import com.wendaoren.websecurity.session.Session;
 import com.wendaoren.websecurity.session.SessionContext;
@@ -36,10 +36,10 @@ public abstract class AbstractSignatureValidator implements SignatureValidator {
             sign = signParamMap.get(SecurityConstant.PARAM_SIGNATURE_NAME);
         }
         if (!StringUtils.hasLength(requestId)) {
-            throw new SignatureException(CommonErrorCodeTable.PARAMS_EMPTY_P.toErrorCode(SecurityConstant.PARAM_REQUEST_ID_NAME));
+            throw new SignatureException(ErrorCode.build(ErrorCodeConstant.PARAMETER_ERROR, request.getLocale(), new Object[]{SecurityConstant.PARAM_REQUEST_ID_NAME}));
         }
         if (!StringUtils.hasLength(sign)) {
-            throw new SignatureException(CommonErrorCodeTable.PARAMS_EMPTY_P.toErrorCode(SecurityConstant.PARAM_SIGNATURE_NAME));
+            throw new SignatureException(ErrorCode.build(ErrorCodeConstant.PARAMETER_ERROR, request.getLocale(), new Object[]{SecurityConstant.PARAM_SIGNATURE_NAME}));
         }
         String signKey = getSignKey(request, method, checkSign);
         try {
@@ -48,7 +48,7 @@ public abstract class AbstractSignatureValidator implements SignatureValidator {
             if (e instanceof SignatureException) {
                 throw e;
             }
-            throw new SignatureException(WebSecurityErrorCodeTable.PARAM_SIGNATURE_VALID_FAIL.toErrorCode(), e);
+            throw new SignatureException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, request.getLocale()));
         }
     }
 

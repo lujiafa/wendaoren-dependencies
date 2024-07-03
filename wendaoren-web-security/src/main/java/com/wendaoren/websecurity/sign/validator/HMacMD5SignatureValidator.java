@@ -1,9 +1,10 @@
 package com.wendaoren.websecurity.sign.validator;
 
+import com.wendaoren.core.constant.ErrorCodeConstant;
+import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.utils.common.DefaultValueUtils;
 import com.wendaoren.websecurity.annotation.CheckSign;
 import com.wendaoren.websecurity.exception.SignatureException;
-import com.wendaoren.websecurity.exception.table.WebSecurityErrorCodeTable;
 import com.wendaoren.websecurity.sign.AbstractSignatureValidator;
 import com.wendaoren.websecurity.util.SignUtils;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public class HMacMD5SignatureValidator extends AbstractSignatureValidator {
 	@Override
 	protected void doVerify(HttpServletRequest request, Method method, CheckSign checkSign, Map<String, String> signParamMap, String signKey, String sign) throws SignatureException {
 		if (!SignUtils.verifyHMacMD5(signParamMap, DefaultValueUtils.defaultEmpty(signKey), sign)) {
-			throw new SignatureException(WebSecurityErrorCodeTable.PARAM_SIGNATURE_VALID_FAIL.toErrorCode());
+			throw new SignatureException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, request.getLocale()));
 		}
 	}
 }
