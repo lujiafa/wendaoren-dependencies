@@ -14,13 +14,11 @@ import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSourceResolvable;
 import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -84,22 +82,6 @@ public class DefaultHandlerExceptionResolver implements HandlerExceptionResolver
 			}
 			if (logger.isDebugEnabled()) {
 				logger.debug("数据绑定失败|BindException|{}", tempStringBuilder);
-			}
-			if (!webProperties.isDisableDefaultExceptionResolver()) {
-				return null;
-			}
-			errorCode = ErrorCode.build(ErrorCodeConstant.PARAMETER_ERROR, request.getLocale(), new Object[]{tempStringBuilder.toString()});
-		} else if (ex instanceof HandlerMethodValidationException) {
-			List<? extends MessageSourceResolvable> allErrors = ((HandlerMethodValidationException) ex).getAllErrors();
-			StringBuilder tempStringBuilder = new StringBuilder();
-			for (MessageSourceResolvable messageSourceResolvable : allErrors) {
-				if (tempStringBuilder.length() > 0) {
-					tempStringBuilder.append(SeparatorChar.SEMICOLON);
-				}
-				tempStringBuilder.append(messageSourceResolvable.getDefaultMessage());
-			}
-			if (logger.isDebugEnabled()) {
-				logger.debug("数据绑定失败|HandlerMethodValidationException|{}", tempStringBuilder);
 			}
 			if (!webProperties.isDisableDefaultExceptionResolver()) {
 				return null;
