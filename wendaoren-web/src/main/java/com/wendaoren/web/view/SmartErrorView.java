@@ -2,18 +2,16 @@ package com.wendaoren.web.view;
 
 import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.web.constan.WebSupportConstant;
-import com.wendaoren.web.model.response.ResponseData;
 import com.wendaoren.web.util.SupportDefaultErrorPageTemplate;
-import org.springframework.http.MediaType;
-
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.MediaType;
 
 public class SmartErrorView extends SmartView {
 	
 	private ErrorCode errorCode;
 	
 	public SmartErrorView(ErrorCode errorCode, MediaType mediaType) {
-		super(ResponseData.fail(errorCode), mediaType, true);
+		super(errorCode, mediaType, true);
 		this.errorCode = errorCode;
 	}
 	

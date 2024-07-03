@@ -1,7 +1,9 @@
 package com.wendaoren.core.exception;
 
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
+import com.wendaoren.core.constant.ErrorCodeConstant;
 import org.springframework.util.Assert;
+
+import java.util.Locale;
 
 /**
  * @author Jon
@@ -15,14 +17,9 @@ public class BusinessException extends RuntimeException {
 	
 	private ErrorCode errorCode;
     
-    public BusinessException() {
-        super(CommonErrorCodeTable.SERVER_BUSY.getMessage());
-        this.errorCode = CommonErrorCodeTable.SERVER_BUSY.toErrorCode();
-    }
-    
-    public BusinessException(Throwable cause) {
+    public BusinessException(Throwable cause, Locale locale) {
         super(cause);
-        this.errorCode = CommonErrorCodeTable.SERVER_BUSY.toErrorCode();
+        this.errorCode = ErrorCode.build(ErrorCodeConstant.SERVER_BUSY, locale);
     }
     
     public BusinessException(ErrorCode errorCode) {

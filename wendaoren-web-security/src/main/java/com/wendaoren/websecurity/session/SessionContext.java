@@ -1,6 +1,7 @@
 package com.wendaoren.websecurity.session;
 
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
+import com.wendaoren.core.constant.ErrorCodeConstant;
+import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.utils.common.UUIDUtils;
 import com.wendaoren.utils.web.WebUtils;
 import com.wendaoren.websecurity.constant.RedisScriptConstant;
@@ -8,14 +9,14 @@ import com.wendaoren.websecurity.constant.SecurityConstant;
 import com.wendaoren.websecurity.exception.SessionException;
 import com.wendaoren.websecurity.prop.SecurityProperties;
 import com.wendaoren.websecurity.session.simple.SimpleSession;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class SessionContext {
 		String sessionIdName = securityProperties.getSession().getSessionIdName();
 		if (!StringUtils.hasLength(sessionIdName)) {
 			logger.error("properties sessionIdName[{}] cannot be empty.", sessionIdName);
-			throw new SessionException(CommonErrorCodeTable.CONFIG_PARAMS_ERROR_P.toErrorCode("web.security.session.sessionIdName"));
+			throw new SessionException(ErrorCode.build(ErrorCodeConstant.INTERNAL_ERROR, new Object[]{"web.security.session.sessionIdName"}));
 		}
 		HttpServletRequest request = WebUtils.getRequest();
 		if (securityProperties.isEnableHeader()) {
@@ -100,7 +101,7 @@ public class SessionContext {
 		Map<String, String> mutexConditionMap = (Map<String, String>) session.getAttribute(SecurityConstant.SECURITY_SESSION_MUTEX_KEYS_ATTR_NAME);
 		String cachePrefix = securityProperties.getSession().getCachePrefix();
 		if (cachePrefix == null) {
-			throw new SessionException(CommonErrorCodeTable.CONFIG_PARAMS_ERROR_P.toErrorCode("web.security.session.cachePrefix"));
+			throw new SessionException(ErrorCode.build(ErrorCodeConstant.INTERNAL_ERROR, new Object[]{"web.security.session.cachePrefix"}));
 		}
 		String sessionCacheKey = cachePrefix + session.getId();
 		redisTemplate.opsForValue().set(sessionCacheKey, session, securityProperties.getSession().getExpire(), TimeUnit.SECONDS);
@@ -162,7 +163,7 @@ public class SessionContext {
 		}
 		String cachePrefix = securityProperties.getSession().getCachePrefix();
 		if (cachePrefix == null) {
-			throw new SessionException(CommonErrorCodeTable.CONFIG_PARAMS_ERROR_P.toErrorCode("web.security.session.cachePrefix"));
+			throw new SessionException(ErrorCode.build(ErrorCodeConstant.INTERNAL_ERROR, new Object[]{"web.security.session.cachePrefix"}));
 		}
 		String sessionCacheKey = cachePrefix + sessionId;
 		Session session = (Session) redisTemplate.opsForValue().get(sessionCacheKey);

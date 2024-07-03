@@ -2,14 +2,14 @@ package com.wendaoren.web.view;
 
 import com.wendaoren.utils.common.JsonUtils;
 import com.wendaoren.utils.common.XmlUtils;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.View;
 
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -45,10 +45,14 @@ public class SmartView implements View {
 		response.setHeader("Pragma", "no-cache");
 		response.setHeader("Cache-Control", "no-cache");
 		response.setCharacterEncoding(charset.name());
+		String responseContent = getContent(request);
+		if (responseContent == null) {
+			return;
+		}
 		ServletOutputStream out = response.getOutputStream();
 		try {
 			response.setContentType(mediaType.toString());
-			out.write(getContent(request).getBytes(charset.name()));
+			out.write(responseContent.getBytes(charset.name()));
 			out.flush();
 		} finally {
 			try {
@@ -74,11 +78,10 @@ public class SmartView implements View {
 	}
 	
 	protected String getContent(HttpServletRequest request) {
-		String content = null;
 		if (data == null) {
-			content = "null";
-			return content;
+			return null;
 		}
+		String content = null;
 		if (MediaType.APPLICATION_JSON.includes(mediaType)
 				|| MediaType.TEXT_PLAIN.includes(mediaType)
 				|| EXTENSION_SUPPORT_JSON_MEDIA_TYPE.includes(mediaType)) {

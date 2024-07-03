@@ -1,17 +1,18 @@
 package com.wendaoren.web.handler;
 
+import com.wendaoren.core.constant.ErrorCodeConstant;
 import com.wendaoren.core.exception.BusinessException;
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
+import com.wendaoren.core.exception.ErrorCode;
 import com.wendaoren.utils.web.WebUtils;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -133,7 +134,7 @@ public class RepeatStreamHandlerRequestFilter implements Filter {
 				is.close();
 			} catch (Exception e) {
 				logger.error("获取请求数据异常|{}", e.getMessage(), e);
-				throw new BusinessException(CommonErrorCodeTable.DATA_LOAD_FAIL.toErrorCode(), e);
+				throw new BusinessException(ErrorCode.build(ErrorCodeConstant.DATA_LOADING_FAILED, getRequest().getLocale()), e);
 			}
 		}
 	}

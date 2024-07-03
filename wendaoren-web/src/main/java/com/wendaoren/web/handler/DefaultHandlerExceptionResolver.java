@@ -1,28 +1,29 @@
 package com.wendaoren.web.handler;
 
-import com.wendaoren.utils.constant.SeparatorChar;
+import com.wendaoren.core.constant.ErrorCodeConstant;
 import com.wendaoren.core.exception.BusinessException;
 import com.wendaoren.core.exception.ErrorCode;
-import com.wendaoren.core.exception.table.CommonErrorCodeTable;
-import com.wendaoren.web.prop.WebProperties;
+import com.wendaoren.utils.constant.SeparatorChar;
 import com.wendaoren.utils.web.WebUtils;
+import com.wendaoren.web.prop.WebProperties;
 import com.wendaoren.web.view.SmartErrorView;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -69,27 +70,9 @@ public class DefaultHandlerExceptionResolver implements HandlerExceptionResolver
 			if (logger.isDebugEnabled()) {
 				logger.debug("数据验证失败|ConstraintViolationException|{}", tempStringBuilder);
 			}
-			errorCode = CommonErrorCodeTable.UNDETERMINED_ERROR.toErrorCode(tempStringBuilder.toString());
+			errorCode = ErrorCode.build(ErrorCodeConstant.PARAMETER_ERROR, request.getLocale(), new Object[]{tempStringBuilder.toString()});
 		} else if (ex instanceof BindException) {// 数据绑定异常
 			BindException exs = (BindException) ex;
-			BindingResult bindingResult = exs.getBindingResult();
-			List<ObjectError> allErrors = bindingResult.getAllErrors();
-			StringBuilder tempStringBuilder = new StringBuilder();
-			for (ObjectError oe : allErrors) {
-				if (tempStringBuilder.length() == 0) {
-					tempStringBuilder.append(SeparatorChar.SEMICOLON);
-				}
-				tempStringBuilder.append(oe.getDefaultMessage());
-			}
-			if (logger.isDebugEnabled()) {
-				logger.debug("数据绑定失败|BindException|{}", tempStringBuilder);
-			}
-			if (!webProperties.isDisableDefaultExceptionResolver()) {
-				return null;
-			}
-			errorCode = CommonErrorCodeTable.NOT_SUPPORT_PARAMS_TYPE_CONVERT.toErrorCode();
-		} else if (ex instanceof MethodArgumentNotValidException) {// 当用@Valid注释的参数的验证失败时，将引发异常
-			MethodArgumentNotValidException exs = (MethodArgumentNotValidException) ex;
 			BindingResult bindingResult = exs.getBindingResult();
 			List<ObjectError> allErrors = bindingResult.getAllErrors();
 			StringBuilder tempStringBuilder = new StringBuilder();
@@ -100,19 +83,35 @@ public class DefaultHandlerExceptionResolver implements HandlerExceptionResolver
 				tempStringBuilder.append(oe.getDefaultMessage());
 			}
 			if (logger.isDebugEnabled()) {
-				logger.debug("数据参数验证失败|MethodArgumentNotValidException|{}", tempStringBuilder);
+				logger.debug("数据绑定失败|BindException|{}", tempStringBuilder);
 			}
 			if (!webProperties.isDisableDefaultExceptionResolver()) {
 				return null;
 			}
-			errorCode = CommonErrorCodeTable.UNDETERMINED_ERROR.toErrorCode(tempStringBuilder.toString());
+			errorCode = ErrorCode.build(ErrorCodeConstant.PARAMETER_ERROR, request.getLocale(), new Object[]{tempStringBuilder.toString()});
+		} else if (ex instanceof HandlerMethodValidationException) {
+			List<? extends MessageSourceResolvable> allErrors = ((HandlerMethodValidationException) ex).getAllErrors();
+			StringBuilder tempStringBuilder = new StringBuilder();
+			for (MessageSourceResolvable messageSourceResolvable : allErrors) {
+				if (tempStringBuilder.length() > 0) {
+					tempStringBuilder.append(SeparatorChar.SEMICOLON);
+				}
+				tempStringBuilder.append(messageSourceResolvable.getDefaultMessage());
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("数据绑定失败|HandlerMethodValidationException|{}", tempStringBuilder);
+			}
+			if (!webProperties.isDisableDefaultExceptionResolver()) {
+				return null;
+			}
+			errorCode = ErrorCode.build(ErrorCodeConstant.PARAMETER_ERROR, request.getLocale(), new Object[]{tempStringBuilder.toString()});
 		} else {
 			logger.error(ex.getMessage(), ex);
 			notify(ex.getMessage());
 			if (!webProperties.isDisableDefaultExceptionResolver()) {
 				return null;
 			}
-			errorCode = CommonErrorCodeTable.SERVER_BUSY.toErrorCode();
+			errorCode = ErrorCode.build(ErrorCodeConstant.SERVER_BUSY, request.getLocale());
 		}
 		MediaType mediaType = WebUtils.getResponseMediaType(request);
 		SmartErrorView view = new SmartErrorView(errorCode, mediaType);
