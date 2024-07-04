@@ -6,7 +6,7 @@
 
     <groupId>com.wendaoren</groupId>
     <artifactId>wendaoren-dependencies</artifactId>
-    <version>3.2.1-SNAPSHOT</version>
+    <version>3.2.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -16,7 +16,7 @@
         <skipTests>true</skipTests>
         <spring-boot-starter-parent.version>3.2.5</spring-boot-starter-parent.version>
         <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
-        <com.wendaoren.version>3.2.1-SNAPSHOT</com.wendaoren.version>
+        <com.wendaoren.version>3.2.2-SNAPSHOT</com.wendaoren.version>
     </properties>
 
     <modules>
