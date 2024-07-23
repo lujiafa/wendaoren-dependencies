@@ -1,12 +1,5 @@
-package com.wendaoren.websecurity.util;
+package com.wendaoren.utils.crypto;
 
-import com.wendaoren.core.constant.ErrorCodeConstant;
-import com.wendaoren.core.exception.BusinessException;
-import com.wendaoren.core.exception.ErrorCode;
-import com.wendaoren.utils.crypto.Base64;
-import com.wendaoren.utils.crypto.HMacMD5;
-import com.wendaoren.utils.crypto.MD5;
-import com.wendaoren.utils.crypto.RSA;
 import com.wendaoren.utils.data.HexUtils;
 import org.springframework.util.Assert;
 
@@ -31,16 +24,15 @@ public class SignUtils {
 	public static String signMd5(Map<String, String> paramMap, String key) {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
 		Assert.hasText(key, "parameter key cannot be empty.");
-		StringBuilder stringBuilder = new StringBuilder();
-		buildParam(paramMap, stringBuilder, false);
+		StringBuilder stringBuilder = buildParam(paramMap, false);
 		if (stringBuilder.length() > 0) {
 			stringBuilder.append("&");
 		}
 		stringBuilder.append("key=").append(key);
 		try {
-            return HexUtils.toHex(MD5.encrypt(stringBuilder.toString(), StandardCharsets.UTF_8.name()));
+            return HexUtils.toHex(MD5Utils.encrypt(stringBuilder.toString(), StandardCharsets.UTF_8.name()));
 		} catch (Exception e) {
-			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -65,12 +57,11 @@ public class SignUtils {
 	public static String signHMacMD5(Map<String, String> paramMap, String signKey) {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
 		Assert.hasText(signKey, "parameter signKey cannot be empty.");
-		StringBuilder stringBuilder = new StringBuilder();
-		buildParam(paramMap, stringBuilder, false);
+		StringBuilder stringBuilder = buildParam(paramMap, false);
 		try {
-            return HexUtils.toHex(HMacMD5.encryptHMAC(stringBuilder.toString(), signKey, StandardCharsets.UTF_8.name()));
+            return HexUtils.toHex(HMacMD5Utils.encryptHMAC(stringBuilder.toString(), signKey, StandardCharsets.UTF_8.name()));
 		} catch (Exception e) {
-			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -83,12 +74,11 @@ public class SignUtils {
 	public static String signMD5WithRSA(Map<String, String> paramMap, String privateKey) {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
 		Assert.hasText(privateKey, "parameter privateKey cannot be empty.");
-		StringBuilder stringBuilder = new StringBuilder();
-		buildParam(paramMap, stringBuilder, false);
+		StringBuilder stringBuilder = buildParam(paramMap, false);
 		try {
-			return Base64.encode(RSA.signMD5WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(privateKey)));
+			return Base64Utils.encode(RSAUtils.signMD5WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64Utils.decode(privateKey)));
 		} catch (Exception e) {
-			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -101,12 +91,11 @@ public class SignUtils {
 	public static String signSHAWithRSA(Map<String, String> paramMap, String privateKeyBase64) {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
 		Assert.hasText(privateKeyBase64, "parameter privateKey cannot be empty.");
-		StringBuilder stringBuilder = new StringBuilder();
-		buildParam(paramMap, stringBuilder, false);
+		StringBuilder stringBuilder = buildParam(paramMap, false);
 		try {
-			return Base64.encode(RSA.signSHA1WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(privateKeyBase64)));
+			return Base64Utils.encode(RSAUtils.signSHA1WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64Utils.decode(privateKeyBase64)));
 		} catch (Exception e) {
-			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -119,12 +108,11 @@ public class SignUtils {
 	public static String signSHAWithRSA256(Map<String, String> paramMap, String privateKey) {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
 		Assert.hasText(privateKey, "parameter privateKey cannot be empty.");
-		StringBuilder stringBuilder = new StringBuilder();
-		buildParam(paramMap, stringBuilder, false);
+		StringBuilder stringBuilder = buildParam(paramMap, false);
 		try {
-			return Base64.encode(RSA.signSHA256WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(privateKey)));
+			return Base64Utils.encode(RSAUtils.signSHA256WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64Utils.decode(privateKey)));
 		} catch (Exception e) {
-			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.OPERATION_FAIL, new Object[]{e.getMessage()}));
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -139,12 +127,11 @@ public class SignUtils {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
 		Assert.hasText(signKey, "parameter signKey cannot be empty.");
 		Assert.hasText(sign, "parameter sign cannot be empty.");
-		StringBuilder stringBuilder = new StringBuilder();
-		buildParam(paramMap, stringBuilder, false);
+		StringBuilder stringBuilder = buildParam(paramMap, false);
 		try {
-			return sign.equalsIgnoreCase(HexUtils.toHex(HMacMD5.encryptHMAC(stringBuilder.toString(), signKey, StandardCharsets.UTF_8.name())));
+			return sign.equalsIgnoreCase(HexUtils.toHex(HMacMD5Utils.encryptHMAC(stringBuilder.toString(), signKey, StandardCharsets.UTF_8.name())));
 		} catch (Exception e) {
-			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, new Object[]{e.getMessage()}));
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -159,12 +146,11 @@ public class SignUtils {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
 		Assert.hasText(publicKey, "parameter publicKey cannot be empty.");
 		Assert.hasText(sign, "parameter sign cannot be empty.");
-		StringBuilder stringBuilder = new StringBuilder();
-		buildParam(paramMap, stringBuilder, false);
+		StringBuilder stringBuilder = buildParam(paramMap, false);
 		try {
-			return RSA.signVerifyMD5WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(publicKey), Base64.decode(sign));
+			return RSAUtils.signVerifyMD5WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64Utils.decode(publicKey), Base64Utils.decode(sign));
 		} catch (Exception e) {
-			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, new Object[]{e.getMessage()}));
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -179,12 +165,11 @@ public class SignUtils {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
 		Assert.hasText(publicKey, "parameter publicKey cannot be empty.");
 		Assert.hasText(sign, "parameter sign cannot be empty.");
-		StringBuilder stringBuilder = new StringBuilder();
-		buildParam(paramMap, stringBuilder, false);
+		StringBuilder stringBuilder = buildParam(paramMap, false);
 		try {
-			return RSA.signVerifySHA1WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(publicKey), Base64.decode(sign));
+			return RSAUtils.signVerifySHA1WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64Utils.decode(publicKey), Base64Utils.decode(sign));
 		} catch (Exception e) {
-			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, new Object[]{e.getMessage()}));
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -199,12 +184,11 @@ public class SignUtils {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
 		Assert.hasText(publicKey, "parameter publicKey cannot be empty.");
 		Assert.hasText(sign, "parameter sign cannot be empty.");
-		StringBuilder stringBuilder = new StringBuilder();
-		buildParam(paramMap, stringBuilder, false);
+		StringBuilder stringBuilder = buildParam(paramMap, false);
 		try {
-			return RSA.signVerifySHA256WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64.decode(publicKey), Base64.decode(sign));
+			return RSAUtils.signVerifySHA256WithRSA(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), Base64Utils.decode(publicKey), Base64Utils.decode(sign));
 		} catch (Exception e) {
-			throw new BusinessException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, new Object[]{e.getMessage()}));
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -219,9 +203,9 @@ public class SignUtils {
 	 *      6.内部值中嵌套对象中空值或空字符串不做任何处理（即保留）【外部Jackson反序列化保障】
 	 *      7.内部值中的嵌套对象键值属性保持原有顺序，不做特殊排序处理【外部Jackson反序列化保障】
 	 */
-	public static void buildParam(Map<String, String> paramMap, StringBuilder stringBuilder, boolean isEncode) {
+	public static StringBuilder buildParam(Map<String, String> paramMap, boolean isEncode) {
 		Assert.notNull(paramMap, "parameter paramMap cannot be null.");
-		Assert.notNull(stringBuilder, "parameter stringBuilder cannot be null.");
+		StringBuilder stringBuilder = new StringBuilder();
 		Map<String, String> tmap = new TreeMap<String, String>(paramMap);
 		for (String k : tmap.keySet()) {
 			String val = tmap.get(k);
@@ -240,6 +224,7 @@ public class SignUtils {
 				throw new RuntimeException(e.getMessage(), e);
 			}
 		}
+        return stringBuilder;
 	}
 
 }

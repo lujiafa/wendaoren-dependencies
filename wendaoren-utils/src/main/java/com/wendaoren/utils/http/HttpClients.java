@@ -2,13 +2,12 @@ package com.wendaoren.utils.http;
 
 import com.wendaoren.utils.common.IntrospectorUtils;
 import com.wendaoren.utils.common.JsonUtils;
-import com.wendaoren.utils.common.MapUtils;
-import com.wendaoren.utils.constant.SeparatorChar;
 import com.wendaoren.utils.prop.HttpClientProperties;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -18,23 +17,29 @@ import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.util.Timeout;
-import org.springframework.http.HttpHeaders;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import javax.net.ssl.SSLContext;
+import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
-public final class HttpClients {
+public class HttpClients {
 
-    static CloseableHttpClient httpClient = org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
+    final static String CONTENT_TYPE_NAME = "Content-Type";
+
+    static CloseableHttpClient defaultHttpClient = org.apache.hc.client5.http.impl.classic.HttpClients.createDefault();
 
     public HttpClients(HttpClientProperties httpClientProperties) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         // 创建连接池
@@ -44,7 +49,7 @@ public final class HttpClients {
         // 设置每个路由的默认最大连接
         cm.setDefaultMaxPerRoute(httpClientProperties.getPool().getMaxPerRoute());
 
-        RequestConfig requestConfig = RequestConfig.custom()
+        org.apache.hc.client5.http.config.RequestConfig requestConfig = org.apache.hc.client5.http.config.RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofSeconds(httpClientProperties.getRequest().getConnectTimeout()))
                 .setResponseTimeout(Timeout.ofSeconds(httpClientProperties.getRequest().getResponseTimeout()))
                 .build();
@@ -52,233 +57,102 @@ public final class HttpClients {
                 .create()
                 .loadTrustMaterial(TrustAllStrategy.INSTANCE)
                 .build();
-        httpClient = HttpClientBuilder.create()
+        defaultHttpClient = HttpClientBuilder.create()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
                 .setProxy(StringUtils.hasLength(httpClientProperties.getProxy().getHostname()) && httpClientProperties.getProxy().getPort() > 0 ? new HttpHost(httpClientProperties.getProxy().getHostname(), httpClientProperties.getProxy().getPort()) : null)
                 .build();
-
     }
 
-    public static void main(String[] args) throws Exception {
-        HttpResponseData response = get("https://www.baidu.com");
-        System.out.println("----->" + response.getContent());
-    }
-
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @return 响应数据对象
-     */
     public static HttpResponseData get(String url) {
-        return get(url, null, (Map) null);
+        return get(url, null);
     }
 
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param clazz 响应数据待转换类型/返回类型
-     * @return 响应数据转换对象
-     */
-    public static <T> T get(String url, Class<T> clazz) {
-        return get(url, null, null, clazz);
+    public static HttpResponseData get(String url, RequestConfig requestConfig) {
+        if (requestConfig == null) {
+            requestConfig = RequestConfig.build();
+        }
+        HttpGet httpGet = new HttpGet(buildURIFromParams(url, requestConfig));
+        addHeader(httpGet, requestConfig);
+        return execute(requestConfig.getHttpClient(), httpGet);
     }
 
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param headerMap 请求头集合
-     * @return 响应数据对象
-     */
-    public static HttpResponseData get(String url, Map<String, Object> headerMap) {
-        return get(url, null, headerMap);
-    }
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param headerMap 请求头集合
-     * @param clazz 响应数据待转换类型/返回类型
-     * @return 响应数据转换对象
-     */
-    public static <T> T get(String url, Map<String, Object> headerMap, Class<T> clazz) {
-        return get(url, null, headerMap, clazz);
-    }
-
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param paramMap 参数
-     * @param headerMap 请求头集合
-     * @param clazz 响应数据待转换类型/返回类型
-     * @return 响应数据转换对象
-     */
-    public static <T> T get(String url, Map<String, String> paramMap, Map<String, Object> headerMap, Class<T> clazz) {
-        HttpResponseData httpResponseData = get(url, paramMap, headerMap);
-        return convertHttpResponseData(httpResponseData, clazz);
-    }
-
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param paramMap 参数
-     * @param headerMap 请求头集合
-     * @return 响应数据对象
-     */
-    public static HttpResponseData get(String url, Map<String, String> paramMap, Map<String, Object> headerMap) {
-        HttpGet httpGet = new HttpGet(url);
-        ContentType contentType = ContentType.APPLICATION_FORM_URLENCODED;
-        if (headerMap != null && headerMap.size() > 0) {
-            headerMap.entrySet().forEach(p -> httpGet.setHeader(p.getKey(), p.getValue()));
-            String contentTypeStr = (String) MapUtils.getIgnoreCase(headerMap, HttpHeaders.CONTENT_TYPE);
-            if (contentTypeStr != null) {
-                String[] customContentTypeSubs = contentTypeStr.split(SeparatorChar.SEMICOLON);
-                if (customContentTypeSubs.length > 1) {
-                    contentType = ContentType.create(customContentTypeSubs[0], customContentTypeSubs[1]);
-                } else {
-                    contentType = ContentType.create(customContentTypeSubs[0], StandardCharsets.UTF_8);
+    public static HttpResponseData post(String url, RequestConfig requestConfig) {
+        AtomicReference<ContentType> contentTypeRef = new AtomicReference<>();
+        if (requestConfig.getHeaders() != null) {
+            requestConfig.getHeaders().entrySet().forEach(es -> {
+                Object hvalue = es.getValue();
+                if (CONTENT_TYPE_NAME.equalsIgnoreCase(es.getKey()) && hvalue != null) {
+                    contentTypeRef.set(ContentType.parse(String.valueOf(es.getValue())));
                 }
-                if (!ContentType.APPLICATION_FORM_URLENCODED.isSameMimeType(contentType)) {
-                    throw new IllegalArgumentException("headerMap key \"Content-Type\" not support");
-                }
+            });
+        }
+        if (contentTypeRef.get() == null) {
+            if (requestConfig.getData() != null) {
+                contentTypeRef.set(ContentType.APPLICATION_JSON);
+            } else if (requestConfig.getMultipart() != null) {
+                contentTypeRef.set(ContentType.MULTIPART_FORM_DATA);
             } else {
-                httpGet.setHeader(org.apache.hc.core5.http.HttpHeaders.CONTENT_TYPE, contentType);
+                contentTypeRef.set(ContentType.APPLICATION_FORM_URLENCODED.withCharset(StandardCharsets.UTF_8).withCharset(StandardCharsets.UTF_8));
             }
         }
-        List<NameValuePair> paramList = new ArrayList<>(paramMap.size());
-        paramMap.entrySet().stream()
-                .filter(p -> p.getValue() != null)
-                .forEach(p -> paramList.add(new BasicNameValuePair(p.getKey(), String.valueOf(p.getValue()))));
-        httpGet.setEntity(new UrlEncodedFormEntity((Iterable<? extends NameValuePair>) paramList.iterator(), contentType.getCharset()));
-        return execute(httpGet);
-    }
+        ContentType contentType = contentTypeRef.get();
 
+        HttpPost httpPost;
 
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @return 响应数据对象
-     */
-    public static HttpResponseData post(String url) {
-        return post(url, null, (Map) null);
-    }
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param clazz 响应数据待转换类型/返回类型
-     * @return 响应数据转换对象
-     */
-    public static <T> T post(String url, Class<T> clazz) {
-        return post(url, null, null, clazz);
-    }
-
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param headerMap 请求头集合。<br>
-     *                  注：Content-Type仅支持"application/x-www-form-urlencoded"和"application/json"，且缺省默认为"application/json"
-     * @return 响应数据对象
-     */
-    public static HttpResponseData post(String url, Map<String, Object> headerMap) {
-        return post(url, null, headerMap);
-    }
-
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param headerMap 请求头集合。<br>
-     *                  注：Content-Type仅支持"application/x-www-form-urlencoded"和"application/json"，且缺省默认为"application/json"
-     * @param clazz 响应数据待转换类型/返回类型
-     * @return 响应数据转换对象
-     */
-    public static <T> T post(String url, Map<String, Object> headerMap, Class<T> clazz) {
-        return post(url, null, headerMap, clazz);
-    }
-
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param param 请求参数
-     * @param headerMap 请求头集合。<br>
-     *                  注：Content-Type仅支持"application/x-www-form-urlencoded"和"application/json"，且缺省默认为"application/json"
-     * @param clazz 响应数据待转换类型/返回类型
-     * @return 响应数据转换对象
-     */
-    public static <T> T post(String url, Object param, Map<String, Object> headerMap, Class<T> clazz) {
-        HttpResponseData httpResponseData = post(url, param, headerMap);
-        return convertHttpResponseData(httpResponseData, clazz);
-    }
-
-    /**
-     * POST请求
-     * @param url 请求URL
-     * @param param 参数
-     * @param headerMap 请求头集合。<br>
-     *                  注：Content-Type仅支持"application/x-www-form-urlencoded"和"application/json"，且缺省默认为"application/json"
-     * @return 响应数据对象
-     */
-    public static HttpResponseData post(String url, Object param, Map<String, Object> headerMap) {
-        HttpPost httpPost = new HttpPost(url);
-
-        ContentType contentType = ContentType.APPLICATION_JSON;
-        if (headerMap != null && headerMap.size() > 0) {
-            headerMap.entrySet().forEach(p -> httpPost.setHeader(p.getKey(), p.getValue()));
-            String contentTypeStr = (String) MapUtils.getIgnoreCase(headerMap, HttpHeaders.CONTENT_TYPE);
-            if (contentTypeStr != null) {
-                String[] customContentTypeSubs = contentTypeStr.split(SeparatorChar.SEMICOLON);
-                if (customContentTypeSubs.length > 1) {
-                    contentType = ContentType.create(customContentTypeSubs[0], customContentTypeSubs[1]);
-                } else {
-                    contentType = ContentType.create(customContentTypeSubs[0], StandardCharsets.UTF_8);
-                }
-                if (!ContentType.APPLICATION_JSON.isSameMimeType(contentType)
-                        && !ContentType.APPLICATION_FORM_URLENCODED.isSameMimeType(contentType)) {
-                    throw new IllegalArgumentException("headerMap key \"Content-Type\" not support");
-                }
+        HttpEntity httpEntity;
+        if (ContentType.APPLICATION_JSON.isSameMimeType(contentType)) {
+            httpPost = new HttpPost(buildURIFromParams(url, requestConfig));
+            httpPost.setEntity(new StringEntity(requestConfig.getData(), contentType));
+        } else if (ContentType.MULTIPART_FORM_DATA.isSameMimeType(contentType)) {
+            httpPost = new HttpPost(buildURIFromParams(url, requestConfig));
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            if (requestConfig.getMultipart() != null) {
+                requestConfig.getMultipart().getFileByteArrays().forEach((k, v) -> {
+                    if (v != null) {
+                        builder.addBinaryBody(k, v);
+                    }
+                });
+                requestConfig.getMultipart().getFileInputStreams().forEach((k, v) -> {
+                    if (v != null) {
+                        builder.addBinaryBody(k, v);
+                    }
+                });
+                requestConfig.getMultipart().getParams().forEach((k, v) -> {
+                    if (v != null) {
+                        builder.addTextBody(k, String.valueOf(v));
+                    }
+                });
             }
-        }
-        HttpEntity httpEntity = null;
-        if (param instanceof CharSequence) {
-            httpEntity = new StringEntity(param.toString(), contentType);
+            httpEntity = builder.build();
+            httpPost.setEntity(httpEntity);
+        } else if (ContentType.APPLICATION_FORM_URLENCODED.isSameMimeType(contentType)) {
+            httpPost = new HttpPost(url);
+            Map<String, Object> params = requestConfig.getParams();
+            List<NameValuePair> paramList = new ArrayList<>(params.size());
+            params.entrySet().stream()
+                    .filter(p -> p.getKey() != null && p.getValue() != null)
+                    .forEach(p -> paramList.add(new BasicNameValuePair(p.getKey(), String.valueOf(p.getValue()))));
+            Charset charset = contentType.getCharset();
+            if (charset == null) {
+                charset = StandardCharsets.UTF_8;
+            }
+            httpEntity = new UrlEncodedFormEntity(paramList, charset);
+            httpPost.setEntity(httpEntity);
         } else {
-            if (ContentType.APPLICATION_FORM_URLENCODED.isSameMimeType(contentType)) {
-                Map<String, ?> paramMap = null;
-                if (param instanceof Map) {
-                    paramMap = (Map<String, ?>) param;
-                } else {
-                    paramMap = IntrospectorUtils.toMap(param);
-                }
-                List<NameValuePair> paramList = new ArrayList<>(paramMap.size());
-                paramMap.entrySet().stream()
-                        .filter(p -> p.getValue() != null)
-                        .forEach(p -> paramList.add(new BasicNameValuePair(p.getKey(), String.valueOf(p.getValue()))));
-                httpEntity = new UrlEncodedFormEntity((Iterable<? extends NameValuePair>) paramList.iterator(), contentType.getCharset());
-            } else {
-                httpEntity = new StringEntity(JsonUtils.toString(param), contentType);
-            }
+            throw new RuntimeException("not support Content-Type - " + contentType);
         }
-        httpPost.setEntity(httpEntity);
-        return execute(httpPost);
+        addHeader(httpPost, requestConfig);
+        return execute(requestConfig.getHttpClient(), httpPost);
     }
 
-    private static <T> T convertHttpResponseData(HttpResponseData httpResponseData, Class<T> clazz) {
-        if (httpResponseData.getStatusCode() == HttpStatus.SC_OK) {
-            if (CharSequence.class.isAssignableFrom(clazz)) {
-                return (T) httpResponseData.getContent();
-            }
-            return JsonUtils.parseObject(httpResponseData.getContent(), clazz);
+    public static HttpResponseData execute(CloseableHttpClient httpClient, HttpUriRequestBase httpRequest) {
+        Assert.notNull(httpRequest, "httpRequest can not be null");
+        if (httpClient == null) {
+            httpClient = defaultHttpClient;
         }
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpResponseData.getHeaderMap().entrySet().forEach(p -> httpHeaders.put(p.getKey(), Arrays.asList(p.getValue())));
-        throw HttpClientErrorException.create(org.springframework.http.HttpStatus.valueOf(httpResponseData.getStatusCode()),
-                httpResponseData.getStatusText(),
-                httpHeaders,
-                httpResponseData.getContent() == null ? null : httpResponseData.getContent().getBytes(httpResponseData.getCharset()),
-                httpResponseData.getCharset());
-    }
-
-    public static HttpResponseData execute(ClassicHttpRequest httpRequest) {
         try (CloseableHttpResponse response = httpClient.execute(httpRequest)) {
-            return new HttpResponseData(response.getCode(),
+            return new HttpClients.HttpResponseData(response.getCode(),
                     response.getReasonPhrase(),
                     EntityUtils.toString(response.getEntity()),
                     response.getHeaders(),
@@ -288,7 +162,183 @@ public final class HttpClients {
         }
     }
 
+    static URI buildURIFromParams(String url, RequestConfig requestConfig) {
+        try {
+            URIBuilder uriBuilder = new URIBuilder(url);
+            if (requestConfig.getParams() != null) {
+                Map<String, Object> params = requestConfig.getParams();
+                List<NameValuePair> paramList = new ArrayList<>(params.size());
+                params.entrySet().stream()
+                        .filter(p -> p.getValue() != null)
+                        .forEach(p -> paramList.add(new BasicNameValuePair(p.getKey(), String.valueOf(p.getValue()))));
+                uriBuilder.setParameters(paramList);
+            }
+            return uriBuilder.build();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    static void addHeader(HttpUriRequestBase httpRequest, RequestConfig requestConfig) {
+        Map<String, Object> headerMap = requestConfig.getHeaders();
+        if (headerMap == null) {
+            return;
+        }
+        // 设置请求头信息
+        headerMap.entrySet().stream()
+                .filter((e) -> e.getKey() != null && e.getValue() != null)
+                .forEach((e) -> {
+                    httpRequest.setHeader(e.getKey(), String.valueOf(e.getValue()));
+                });
+    }
+
+    public static class RequestConfig {
+        private CloseableHttpClient httpClient;
+        // 请求头参数
+        private Map<String, Object> headers = new HashMap<>();
+        // 请求普通参数
+        private Map<String, Object> params = new HashMap<>();
+        // 请求Body参数
+        private String data;
+        // 请求Form文件上传配置
+        private MultipartConfig multipart;
+
+        public static RequestConfig build() {
+            return new RequestConfig();
+        }
+
+        public CloseableHttpClient getHttpClient() {
+            return httpClient;
+        }
+
+        public Map<String, Object> getHeaders() {
+            return headers;
+        }
+
+        public Map<String, Object> getParams() {
+            return params;
+        }
+
+        public String getData() {
+            return this.data;
+        }
+
+        public MultipartConfig getMultipart() {
+            return multipart;
+        }
+
+        public RequestConfig httpClient(CloseableHttpClient httpClient) {
+            this.httpClient = httpClient;
+            return this;
+        }
+
+        public RequestConfig headers(Map<String, Object> headers) {
+            this.headers = headers;
+            return this;
+        }
+
+        public RequestConfig headers(Object headers) {
+            this.headers = IntrospectorUtils.toMap(headers);
+            return this;
+        }
+
+        public RequestConfig header(String key, Object value) {
+            Assert.hasText(key, "key must not be empty");
+            if (this.headers != null) {
+                this.headers.put(key, value);
+            }
+            return this;
+        }
+
+        public RequestConfig params(Map<String, Object> params) {
+            this.params = params;
+            return this;
+        }
+
+        public RequestConfig params(Object params) {
+            this.params = IntrospectorUtils.toMap(params);
+            return this;
+        }
+
+        public RequestConfig param(String key, Object value) {
+            Assert.hasText(key, "key must not be empty");
+            if (this.params != null) {
+                this.params.put(key, value);
+            }
+            return this;
+        }
+
+        public RequestConfig data(String data) {
+            this.data = data;
+            return this;
+        }
+
+        public MultipartConfig multipart() {
+            this.multipart = new MultipartConfig(this);
+            return multipart;
+        }
+    }
+
+    public static class MultipartConfig {
+        private RequestConfig requestConfig;
+
+        MultipartConfig(RequestConfig requestConfig) {
+            this.requestConfig = requestConfig;
+        }
+
+        private Map<String, InputStream> fileInputStreams = new HashMap<>();
+        private Map<String, byte[]> fileByteArrays = new HashMap<>();
+        private Map<String, Object> params = new HashMap<>();
+
+        Map<String, byte[]> getFileByteArrays() {
+            return fileByteArrays;
+        }
+
+        Map<String, InputStream> getFileInputStreams() {
+            return fileInputStreams;
+        }
+
+        Map<String, Object> getParams() {
+            return params;
+        }
+
+        public MultipartConfig fileInputStream(String name, InputStream inputStream) {
+            Assert.hasText(name, "name must not be empty");
+            this.fileInputStreams.put(name, inputStream);
+            return this;
+        }
+
+        public MultipartConfig fileByteArray(String name, byte[] byteArray) {
+            Assert.hasText(name, "name must not be empty");
+            this.fileByteArrays.put(name, byteArray);
+            return this;
+        }
+
+        public MultipartConfig params(Map<String, Object> params) {
+            this.params = params;
+            return this;
+        }
+
+        public MultipartConfig params(Object params) {
+            this.params = IntrospectorUtils.toMap(params);
+            return this;
+        }
+
+        public MultipartConfig param(String key, Object value) {
+            Assert.hasText(key, "key must not be empty");
+            if (this.params != null) {
+                this.params.put(key, value);
+            }
+            return this;
+        }
+
+        public RequestConfig build() {
+            return this.requestConfig;
+        }
+    }
+
     public static class HttpResponseData {
+
         // 响应头信息
         private Map<String, String> headerMap;
         // 响应状态码
@@ -301,6 +351,10 @@ public final class HttpClients {
         private Charset charset;
 
         private HttpResponseData(int statusCode, String statusText, String content, Header[] headers, String charset) {
+            this(statusCode, statusText, content, headers, charset, null);
+        }
+
+        private HttpResponseData(int statusCode, String statusText, String content, Header[] headers, String charset, Object requestData) {
             headerMap = new HashMap<>(headers.length);
             Arrays.stream(headers).forEach(p -> headerMap.put(p.getName(), p.getValue()));
             this.statusCode = statusCode;
@@ -328,32 +382,20 @@ public final class HttpClients {
         public Charset getCharset() {
             return charset;
         }
-    }
 
-//    public static void getOkHttpClient throws IOException, NoSuchAlgorithmException, KeyManagementException {
-//        X509TrustManager trustManager = new X509TrustManager() {
-//            @Override
-//            public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {}
-//            @Override
-//            public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {}
-//            @Override
-//            public X509Certificate[] getAcceptedIssuers() {
-//                return new X509Certificate[0];
-//            }
-//        };
-//
-//        // 创建 SSLContext，并将自定义的 X509TrustManager 添加进去
-//        SSLContext sslContext = SSLContext.getInstance("TLS");
-//        sslContext.init(null, new TrustManager[]{trustManager}, null);
-//
-//        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-//        builder.connectionPool(new ConnectionPool(5,30, TimeUnit.SECONDS));
-//        builder.proxy(Proxy.NO_PROXY);
-//        builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
-//        OkHttpClient client = builder.build();
-//
-//        Request request = new Request.Builder().get().url("https://www.baidu.com").build();
-//        Response response = client.newCall(request).execute();
-//        System.out.println(response.code() + "  " + response.body().byteString());
-//}
+        public <T> T convert(Class<T> clazz) {
+            if (statusCode == HttpStatus.SC_OK) {
+                if (CharSequence.class.isAssignableFrom(clazz)) {
+                    return (T) content;
+                }
+                return JsonUtils.parseObject(content, clazz);
+            }
+            org.springframework.http.HttpHeaders httpHeaders = new org.springframework.http.HttpHeaders();
+            this.headerMap.entrySet().forEach(p -> httpHeaders.put(p.getKey(), Arrays.asList(p.getValue())));
+            throw HttpClientErrorException.create(org.springframework.http.HttpStatus.valueOf(statusCode),
+                    statusText,
+                    httpHeaders,
+                    content == null ? null : content.getBytes(charset), charset);
+        }
+    }
 }

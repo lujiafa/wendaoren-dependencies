@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
  * @date 2016年7月25日
  * @Description h-mac-md5方式数据加密
  */
-public final class HMacMD5 {
+public final class HMacMD5Utils {
 	
 	/**
 	 * 密钥生成器算法

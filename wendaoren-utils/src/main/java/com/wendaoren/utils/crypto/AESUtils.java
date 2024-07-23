@@ -14,7 +14,7 @@ import java.security.Provider;
  * @date 2016年8月15日
  * @Description: AES加密/解密工具类
  */
-public final class AES {
+public final class AESUtils {
 	
 	/**
 	 * 密钥生成器算法

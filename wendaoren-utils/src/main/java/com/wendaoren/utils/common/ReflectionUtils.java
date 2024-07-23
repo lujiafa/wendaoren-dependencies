@@ -38,7 +38,7 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
 				deduplicationSet.add(f.getName());
 				list.add(f);
 			});
-			currentClazz = clazz.getSuperclass();
+			currentClazz = currentClazz.getSuperclass();
 		} while (includeSuper);
 		return list;
 	}

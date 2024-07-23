@@ -2,7 +2,6 @@ package com.wendaoren.core.exception;
 
 import com.wendaoren.core.context.SpringApplicationContext;
 import com.wendaoren.core.prop.CoreProperties;
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 

@@ -2,7 +2,7 @@ package com.wendaoren.utils.crypto;
 
 import java.security.MessageDigest;
 
-public final class SHA {
+public final class SHAUtils {
 	
 	/**
 	 * SHA1加密算法

@@ -1,13 +1,11 @@
 package com.wendaoren.web.model.response;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.wendaoren.core.constant.ErrorCodeConstant;
 import com.wendaoren.core.exception.ErrorCode;
+import com.wendaoren.utils.common.JsonUtils;
 import org.springframework.util.Assert;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -55,7 +53,7 @@ public class EmbedResponseData extends LinkedHashMap<String, Object> {
 		if (data == null) {
 			return responseData;
 		}
-		responseData.putIntrospector(data);
+		responseData.putAll(JsonUtils.convertValue(data, new TypeReference<Map<? extends String, ?>>() {}));
 		return responseData;
 	}
 
@@ -69,28 +67,5 @@ public class EmbedResponseData extends LinkedHashMap<String, Object> {
 		responseData.put(CODE_NAME, code);
 		responseData.put(MESSAGE_NAME, message);
 		return responseData;
-	}
-
-	private void putIntrospector(Object bean) {
-		if (bean == null) {
-			return;
-		}
-		try {
-			Class<? extends Object> clazz = bean.getClass();
-			BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
-			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
-			for (int i = 0; i < propertyDescriptors.length; i++) {
-				PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
-				String propertyName = propertyDescriptor.getName();
-				Method readMethod = propertyDescriptor.getReadMethod();
-				if ("class".equals(propertyName) || readMethod == null) {
-					continue;
-				}
-				Object propertyValue = readMethod.invoke(bean);
-				put(propertyName, propertyValue);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e.getMessage(), e);
-		}
 	}
 }
