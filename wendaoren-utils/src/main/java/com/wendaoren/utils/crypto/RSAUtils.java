@@ -16,7 +16,7 @@ import java.security.spec.X509EncodedKeySpec;
  * @date 2016年8月11日
  * @Description: RSA工具类
  */
-public final class RSA {
+public final class RSAUtils {
 	
 	/**
 	 * 密钥生成器算法
@@ -435,8 +435,8 @@ public final class RSA {
 			KeyPair keyPair = keyPairGen.generateKeyPair();
 			RSAPublicKey publicKey_ = (RSAPublicKey) keyPair.getPublic();
 			RSAPrivateKey privateKey_ = (RSAPrivateKey) keyPair.getPrivate();
-			String publicKey = Base64.encode(publicKey_.getEncoded());
-			String privateKey = Base64.encode(privateKey_.getEncoded());
+			String publicKey = Base64Utils.encode(publicKey_.getEncoded());
+			String privateKey = Base64Utils.encode(privateKey_.getEncoded());
 			String modulus = String.valueOf(publicKey_.getModulus());
 			return new RSAKeyPair(publicKey, privateKey, modulus);
 		} catch (NoSuchAlgorithmException e) {

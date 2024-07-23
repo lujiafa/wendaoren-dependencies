@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
  * @date 2017年10月26日
  * @Description  h-mac-sha方式加密
  */
-public class HMacSHA {
+public class HMacSHAUtils {
 	
 	/**
 	 * HmacSHA1加密算法

@@ -23,7 +23,14 @@ public class HMacMD5SignatureValidator extends AbstractSignatureValidator {
 
 	@Override
 	protected void doVerify(HttpServletRequest request, Method method, CheckSign checkSign, Map<String, String> signParamMap, String signKey, String sign) throws SignatureException {
-		if (!SignUtils.verifyHMacMD5(signParamMap, DefaultValueUtils.defaultEmpty(signKey), sign)) {
+		try {
+			if (!SignUtils.verifyHMacMD5(signParamMap, DefaultValueUtils.defaultEmpty(signKey), sign)) {
+				throw new SignatureException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, request.getLocale()));
+			}
+		} catch (Exception e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("签名验证失败 - {}", e.getMessage(), e);
+			}
 			throw new SignatureException(ErrorCode.build(ErrorCodeConstant.INVALID_SIGNATURE_INFO, request.getLocale()));
 		}
 	}
