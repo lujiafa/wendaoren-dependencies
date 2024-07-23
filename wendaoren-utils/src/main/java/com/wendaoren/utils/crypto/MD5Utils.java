@@ -3,7 +3,7 @@ package com.wendaoren.utils.crypto;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
-public final class MD5 {
+public final class MD5Utils {
 	
 	/**
 	 * 算法

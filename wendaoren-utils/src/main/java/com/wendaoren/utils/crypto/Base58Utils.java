@@ -2,7 +2,7 @@ package com.wendaoren.utils.crypto;
 
 import java.util.Arrays;
 
-public class Base58 {
+public class Base58Utils {
 
     public static final char[] ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".toCharArray();
     private static final char ENCODED_ZERO = ALPHABET[0];

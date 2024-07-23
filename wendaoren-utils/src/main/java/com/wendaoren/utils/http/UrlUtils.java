@@ -17,6 +17,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class UrlUtils {
 	/**
+	 * @Description 通过url前缀、相对路径组成新url
+	 * @param basePrefixUrl url前缀
+	 * @param subPath 子路径、相对路径【可缺省】
+	 * @return String
+	 */
+	public static String concat(String basePrefixUrl, String subPath) {
+		return concat(basePrefixUrl, subPath, null, false);
+	}
+
+	/**
 	 * @Description 通过url前缀、相对路径和参数集合组成新url（默认不进行增量参数URLEncode编码）
 	 * @param basePrefixUrl url前缀
 	 * @param subPath 子路径、相对路径【可缺省】
@@ -41,7 +51,15 @@ public class UrlUtils {
 		}
 		String sourceUrl = basePrefixUrl.trim();
 		if (StringUtils.hasText(subPath)) {
-			sourceUrl = (sourceUrl + SeparatorChar.SLASH + subPath.trim()).replaceAll("/+", SeparatorChar.SLASH);
+			boolean sourceEndSlash = sourceUrl.endsWith(SeparatorChar.SLASH);
+			boolean subStartSlash = subPath.startsWith(SeparatorChar.SLASH);
+			if (sourceEndSlash && subStartSlash) {
+				sourceUrl = sourceUrl + subPath.substring(1);
+			} else if (!sourceEndSlash && !subStartSlash) {
+				sourceUrl = sourceUrl + SeparatorChar.SLASH + subPath;
+			} else {
+				sourceUrl = sourceUrl + subPath;
+			}
 		}
 		return concat(sourceUrl, paramMap, encode);
 	}

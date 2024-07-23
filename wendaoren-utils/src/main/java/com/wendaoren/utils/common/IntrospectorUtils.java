@@ -10,9 +10,11 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -40,7 +42,7 @@ public class IntrospectorUtils {
 	public static Map<String, String> toStringMap(Object bean) {
 		return toMap(bean, String.class);
 	}
-	
+
 	/**
 	 * @Title toStringMap
 	 * @Description 对象通过内省方式转map
@@ -54,10 +56,12 @@ public class IntrospectorUtils {
 		}
 		try {
 			Map<String, T> map = new LinkedHashMap<String, T>();
-			Class<? extends Object> clazz = bean.getClass();
-			BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
+			Class<? extends Object> beanClass = bean.getClass();
+			BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
 			// propertiesDescriptor来至于对相关Method的解析
 			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+			Map<String, Field> fieldMap = com.wendaoren.utils.common.ReflectionUtils.findFields(beanClass, true, false, true, true)
+					.stream().collect(Collectors.toMap(Field::getName, f->f));
 			for (int i = 0; i < propertyDescriptors.length; i++) {
 				PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
 				String propertyName = propertyDescriptor.getName();
@@ -65,48 +69,21 @@ public class IntrospectorUtils {
 				if ("class".equals(propertyName) || readMethod == null) {
 					continue;
 				}
-				Object propertyValue = readMethod.invoke(bean);
-				if (propertyValue == null || !CharSequence.class.isAssignableFrom(targetValueClazz)) {
-					map.put(propertyName, (T) propertyValue);
+				Field propertyField = fieldMap.get(propertyName);
+				if (propertyField != null && Modifier.isTransient(propertyField.getModifiers())) {
 					continue;
 				}
-				// Value转JSON字符串
-				String tempValue = null;
-				Class<? extends Object> propertyValueClass = propertyValue.getClass();
-				if (propertyValueClass.isPrimitive()
-						|| Number.class.isAssignableFrom(propertyValueClass)
-						|| CharSequence.class.isAssignableFrom(propertyValueClass)) {
-					tempValue = propertyValue.toString();
-				} else if (Date.class.isAssignableFrom(propertyValueClass)) {
-					Date dateValue = (Date) propertyValue;
-					JsonFormat jsonFormat = propertyDescriptor.getReadMethod().getAnnotation(JsonFormat.class);
-					if (jsonFormat == null) {
-						Field field = ReflectionUtils.findField(clazz, propertyName);
-						if (field != null) {
-							jsonFormat = field.getAnnotation(JsonFormat.class);
-						}
-					}
-					if (jsonFormat != null && jsonFormat.pattern() != null && jsonFormat.pattern().length() > 0) {
-						DateFormat dateFormat = null;
-						if (!JsonFormat.DEFAULT_LOCALE.equals(jsonFormat.locale())
-								&& jsonFormat.locale() != null && jsonFormat.locale().length() > 0) {
-							dateFormat = new SimpleDateFormat(jsonFormat.pattern(), new Locale(jsonFormat.locale()));
-						} else {
-							dateFormat = new SimpleDateFormat(jsonFormat.pattern());
-						}
-						dateFormat.setLenient(jsonFormat.lenient().asPrimitive());
-						if (!JsonFormat.DEFAULT_TIMEZONE.equals(jsonFormat.timezone())
-								&& jsonFormat.timezone() != null && jsonFormat.timezone().length() > 0) {
-							dateFormat.setTimeZone(TimeZone.getTimeZone(jsonFormat.timezone()));
-						}
-						tempValue = dateFormat.format(dateValue);
-					} else {
-						tempValue = JsonUtils.toString(dateValue);
-					}
+				T value = null;
+				Object propertyValue = readMethod.invoke(bean);
+				Class<? extends Object> propertyValueClass = readMethod.getReturnType();
+				if (targetValueClazz.isAssignableFrom(propertyValueClass)) {
+					value = (T) propertyValue;
+				} else if (CharSequence.class.isAssignableFrom(targetValueClazz)) {
+					value = (T) getStringValue(readMethod, propertyName, propertyValue, propertyValueClass, beanClass);
 				} else {
-					tempValue = JsonUtils.toString(propertyValue);
+					throw new RuntimeException("Unsupported type conversion");
 				}
-				map.put(propertyName, (T) tempValue);
+				map.put(propertyName, (T) value);
 			}
 			return map;
 		} catch (IntrospectionException e) {
@@ -118,6 +95,47 @@ public class IntrospectorUtils {
 		} catch (SecurityException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		}
+	}
+
+	private static String getStringValue(Method readMethod, String propertyName, Object propertyValue, Class<? extends Object> propertyValueClass, Class beanClass) {
+		if (propertyValue == null) {
+			return null;
+		}
+		String value = null;
+		if (propertyValueClass.isPrimitive()
+				|| Number.class.isAssignableFrom(propertyValueClass)
+				|| CharSequence.class.isAssignableFrom(propertyValueClass)) {
+			value = propertyValue.toString();
+		} else if (Date.class.isAssignableFrom(propertyValueClass)) {
+			Date dateValue = (Date) propertyValue;
+			JsonFormat jsonFormat = readMethod.getAnnotation(JsonFormat.class);
+			if (jsonFormat == null) {
+				Field field = ReflectionUtils.findField(beanClass, propertyName);
+				if (field != null) {
+					jsonFormat = field.getAnnotation(JsonFormat.class);
+				}
+			}
+			if (jsonFormat != null && jsonFormat.pattern() != null && jsonFormat.pattern().length() > 0) {
+				DateFormat dateFormat = null;
+				if (!JsonFormat.DEFAULT_LOCALE.equals(jsonFormat.locale())
+						&& jsonFormat.locale() != null && jsonFormat.locale().length() > 0) {
+					dateFormat = new SimpleDateFormat(jsonFormat.pattern(), new Locale(jsonFormat.locale()));
+				} else {
+					dateFormat = new SimpleDateFormat(jsonFormat.pattern());
+				}
+				dateFormat.setLenient(jsonFormat.lenient().asPrimitive());
+				if (!JsonFormat.DEFAULT_TIMEZONE.equals(jsonFormat.timezone())
+						&& jsonFormat.timezone() != null && jsonFormat.timezone().length() > 0) {
+					dateFormat.setTimeZone(TimeZone.getTimeZone(jsonFormat.timezone()));
+				}
+				value = dateFormat.format(dateValue);
+			} else {
+				value = JsonUtils.toString(dateValue);
+			}
+		} else {
+			value = JsonUtils.toString(propertyValue);
+		}
+		return value;
 	}
 	
 }

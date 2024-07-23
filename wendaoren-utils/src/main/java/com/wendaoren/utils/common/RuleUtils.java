@@ -1,6 +1,6 @@
 package com.wendaoren.utils.common;
 
-import com.wendaoren.utils.crypto.HMacSHA;
+import com.wendaoren.utils.crypto.HMacSHAUtils;
 import com.wendaoren.utils.data.DecUtils;
 import com.wendaoren.utils.data.HexUtils;
 import org.slf4j.Logger;
@@ -552,7 +552,7 @@ public class RuleUtils {
 		try {
 			byte[] tempBytes = new byte[24];
 			System.arraycopy(proBytes, 0, tempBytes, 0, 24);
-			eBytes = HMacSHA.encryptHMacSHA1(tempBytes, (cbytes != null && cbytes.length > 0) ? cbytes : DEFAULT_SALT);
+			eBytes = HMacSHAUtils.encryptHMacSHA1(tempBytes, (cbytes != null && cbytes.length > 0) ? cbytes : DEFAULT_SALT);
 		} catch (Exception e) {
 			if (e instanceof RuntimeException) {
 				throw (RuntimeException) e;
@@ -862,7 +862,7 @@ public class RuleUtils {
 		try {
 			byte[] tempBytes = new byte[24];
 			System.arraycopy(dstBytes, 0, tempBytes, 0, 24);
-			eBytes = HMacSHA.encryptHMacSHA1(tempBytes, (cbytes != null && cbytes.length > 0) ? cbytes : DEFAULT_SALT);
+			eBytes = HMacSHAUtils.encryptHMacSHA1(tempBytes, (cbytes != null && cbytes.length > 0) ? cbytes : DEFAULT_SALT);
 		} catch (Exception e) {
 			if (e instanceof RuntimeException) {
 				throw (RuntimeException) e;

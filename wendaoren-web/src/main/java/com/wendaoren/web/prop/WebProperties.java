@@ -70,7 +70,7 @@ public class WebProperties {
 		 * 注：服务间通讯不建议开启。如果通讯过程中采用忽略空值序列化，解析/反序列化时可能导致反序列化对象默认值不被null覆盖，从而数据失真<br>
 		 * 哪些场景可能适用打开：前后端通讯、请求外部系统、...
 		 */
-		private boolean serializationIgnoreNull;
+		private boolean serializationIgnoreNull = true;
 
 		public boolean isSerializationIgnoreNull() {
 			return serializationIgnoreNull;
